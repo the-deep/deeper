@@ -1,0 +1,50 @@
+version: '3.2'
+
+services:
+    db:
+        build:
+          context: ./server/postgres/
+          cache_from:
+            - thedeep/deep-postgres:latest
+        volumes:
+            - postgres-data:/var/lib/postgresql/data
+
+    redis:
+        image: redis:latest
+        volumes:
+            - redis-data:/data
+
+    server:
+        build:
+          context: ./server/
+          cache_from:
+            - thedeep/deep-server:latest
+        env_file:
+            - .env
+        command: bash -c '/code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_develop.sh'
+        volumes:
+            - ./server/:/code
+            - media:/media
+        ports:
+            - '8000:8000'
+        depends_on:
+            - db
+            - redis
+
+    client:
+        build:
+          context: ./client/
+          cache_from:
+            - thedeep/deep-client:latest
+        env_file:
+            - .env
+        command: bash -c '/code/scripts/run_develop.sh'
+        volumes:
+            - ./client/:/code
+        ports:
+            - '3000:3000'
+
+volumes:
+  media:
+  postgres-data:
+  redis-data:
