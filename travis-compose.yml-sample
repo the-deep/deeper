@@ -1,0 +1,19 @@
+version: '3.2'
+
+services:
+    db:
+        image: thedeep/deep-postgres:latest
+
+    redis:
+        image: redis:latest
+
+    server:
+        image: thedeep/deep-server:latest
+        env_file:
+            - .env
+        command: bash -c '/code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_develop.sh'
+        ports:
+            - '8000:8000'
+        depends_on:
+            - db
+            - redis

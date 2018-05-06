@@ -2,6 +2,7 @@ version: '3.2'
 
 services:
     db:
+        image: thedeep/deep-postgres:latest
         build:
           context: ./server/postgres/
           cache_from:
@@ -15,6 +16,7 @@ services:
             - redis-data:/data
 
     server:
+        image: thedeep/deep-server:latest
         build:
           context: ./server/
           cache_from:
@@ -32,6 +34,7 @@ services:
             - redis
 
     client:
+        image: thedeep/deep-client:latest
         build:
           context: ./client/
           cache_from:

@@ -1,0 +1,17 @@
+{
+  "AWSEBDockerrunVersion": "1",
+  "Authentication": {
+        "Bucket": "DEPLOYMENT_BUCKET",
+        "Key": "DOCKER_AUTH_FILE"
+  },
+  "Image": {
+        "Name": "DOCKER_IMAGE:DOCKER_TAG",
+        "Update": "true"
+  },
+  "Ports": [
+    {
+        "ContainerPort": "80"
+    }
+  ],
+  "Volumes": []
+}
