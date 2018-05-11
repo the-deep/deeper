@@ -39,7 +39,10 @@ fi
 # Build server
 if [ "${DEEP_SERVER_DEPLOY,,}" = "true" ]; then
     echo 'Building Server'
+
     git clone --branch=${DEEP_SERVER_BRANCH} ${DEEP_SERVER_REPO} ${SERVER_PATH}
+    git --git-dir=${SERVER_PATH}/.git --no-pager show --pretty=fuller --quiet
+
     docker-compose pull redis db
     docker pull thedeep/deep-server:latest
     docker build --cache-from thedeep/deep-server:latest --tag thedeep/deep-server:latest ${SERVER_PATH}
@@ -48,9 +51,16 @@ fi
 # Build client
 if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
     echo 'Building Client'
+
     git clone --branch=${DEEP_CLIENT_BRANCH} ${DEEP_CLIENT_REPO} ${CLIENT_PATH}
+    git --git-dir=${CLIENT_PATH}/.git --no-pager show --pretty=fuller --quiet
+
     git clone --branch=${DEEP_REACT_STORE_BRANCH} ${DEEP_REACT_STORE_REPO} ${REACT_STORE_PATH}
+    git --git-dir=${REACT_STORE_PATH}/.git --no-pager show --pretty=fuller --quiet
+
     git clone --branch=${DEEP_RAVL_BRANCH} ${DEEP_RAVL_REPO} ${RAVL_PATH}
+    git --git-dir=${RAVL_PATH}/.git --no-pager show --pretty=fuller --quiet
+
     cp ${REACT_STORE_PATH}/stylesheets/_user-imports-sample.scss ${REACT_STORE_PATH}/stylesheets/_user-imports.scss
     docker pull thedeep/deep-client:latest
     docker build --cache-from thedeep/deep-client:latest --tag thedeep/deep-client:latest ${CLIENT_PATH}
