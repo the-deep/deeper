@@ -1,0 +1,12 @@
+{
+    "client": {
+        "deploy": true,
+        "client": "develop",
+        "reactStore": "develop",
+        "ravl": "master"
+    },
+    "server": {
+        "deploy": true,
+        "server": "develop"
+    }
+}
