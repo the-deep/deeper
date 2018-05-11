@@ -5,8 +5,8 @@ ROOT_DIR=$(dirname "$(dirname "$BASE_DIR")") # /code/
 
 DEPLOY_CONFIG_PATH=$ROOT_DIR/deploy-config.json
 
-DEEP_SERVER_DEPLOY=`jq -r '.client.deploy' ${DEPLOY_CONFIG_PATH}`
-DEEP_CLIENT_DEPLOY=`jq -r '.server.deploy' ${DEPLOY_CONFIG_PATH}`
+DEEP_SERVER_DEPLOY=`jq -r '.server.deploy' ${DEPLOY_CONFIG_PATH}`
+DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${DEPLOY_CONFIG_PATH}`
 
 
 echo "Branch=${TRAVIS_BRANCH}, Pull request=${TRAVIS_PULL_REQUEST}"
