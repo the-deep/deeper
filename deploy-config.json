@@ -1,12 +1,12 @@
 {
     "client": {
-        "deploy": false,
+        "deploy": true,
         "client": "develop",
         "reactStore": "develop",
         "ravl": "master"
     },
     "server": {
-        "deploy": true,
+        "deploy": false,
         "server": "develop"
     }
 }
