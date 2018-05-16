@@ -1,6 +1,7 @@
 # Deeper repos
 client
 server
+browser-extension
 
 media/
 postgres-data/
