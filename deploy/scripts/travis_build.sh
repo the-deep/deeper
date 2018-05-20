@@ -14,16 +14,6 @@ REACT_STORE_PATH=${CLIENT_PATH}/src/vendor/react-store
 RAVL_PATH=${CLIENT_PATH}/src/vendor/ravl
 DEPLOY_CONFIG_PATH=$ROOT_DIR/deploy-config.json
 
-DEEP_SERVER_DEPLOY=`jq -r '.server.deploy' ${DEPLOY_CONFIG_PATH}`
-DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${DEPLOY_CONFIG_PATH}`
-DEEP_SERVER_BRANCH=`jq -r '.server.server' ${DEPLOY_CONFIG_PATH}`
-DEEP_CLIENT_BRANCH=`jq -r '.client.client' ${DEPLOY_CONFIG_PATH}`
-DEEP_REACT_STORE_BRANCH=`jq -r '.client.reactStore' ${DEPLOY_CONFIG_PATH}`
-DEEP_RAVL_BRANCH=`jq -r '.client.ravl' ${DEPLOY_CONFIG_PATH}`
-
-set -x
-cd $ROOT_DIR
-
 # Ignore Pull requets
 if ! [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
     echo '[Travis Build] Pull request found ... exiting...'
@@ -35,6 +25,19 @@ if ! [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" -o "${TRAVIS_BRANCH}" == "${DEE
     echo '[Travis Build] Non RC Branch'
     exit
 fi
+
+
+set -e
+DEEP_SERVER_DEPLOY=`jq -r '.server.deploy' ${DEPLOY_CONFIG_PATH}`
+DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${DEPLOY_CONFIG_PATH}`
+DEEP_SERVER_BRANCH=`jq -r '.server.server' ${DEPLOY_CONFIG_PATH}`
+DEEP_CLIENT_BRANCH=`jq -r '.client.client' ${DEPLOY_CONFIG_PATH}`
+DEEP_REACT_STORE_BRANCH=`jq -r '.client.reactStore' ${DEPLOY_CONFIG_PATH}`
+DEEP_RAVL_BRANCH=`jq -r '.client.ravl' ${DEPLOY_CONFIG_PATH}`
+set +e
+
+set -x
+cd $ROOT_DIR
 
 # Build server
 if [ "${DEEP_SERVER_DEPLOY,,}" = "true" ]; then

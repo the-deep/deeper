@@ -9,6 +9,10 @@ services:
 
     server:
         image: thedeep/deep-server:latest
+        build:
+          context: ./server/
+          cache_from:
+            - thedeep/deep-server:latest
         env_file:
             - .env
         command: bash -c '/code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_develop.sh'
