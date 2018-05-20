@@ -15,7 +15,7 @@ if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" -o "${TRAVIS_BRANCH}" == "${DEEP_
     DEPLOY_REQ_FILES=(travis-compose.yml deploy-config.json)
     for FILE in ${DEPLOY_REQ_FILES[@]}; do
         if ! [ -f ${FILE} ]; then
-            echo 'Error: no ${FILE} found'
+            echo "Error: no ${FILE} found"
             exit 1
         fi
     done
