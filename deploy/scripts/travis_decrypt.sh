@@ -12,7 +12,7 @@ fi
 # Ignore Non RC Branch
 if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" -o "${TRAVIS_BRANCH}" == "${DEEP_RC_PROD_BRANCH}" ]; then
     echo '[Travis Build] RC Branch Found'
-    DEPLOY_REQ_FILES=(travis-compose.yml deploy-config.json)
+    DEPLOY_REQ_FILES=(docker-travis.yml deploy-config.json)
     for FILE in ${DEPLOY_REQ_FILES[@]}; do
         if ! [ -f ${FILE} ]; then
             echo "Error: no ${FILE} found"
@@ -21,7 +21,7 @@ if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" -o "${TRAVIS_BRANCH}" == "${DEEP_
     done
 fi
 
-mv travis-compose.yml docker-compose.yml
+mv docker-travis.yml docker-compose.yml
 
 # configs for travis_deploy.sh
 if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" ]; then
