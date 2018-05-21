@@ -1,0 +1,45 @@
+version: '3.2'
+
+services:
+    channel: # Django Channel
+        image: thedeep/deep-server:latest
+        build:
+          context: ./server/
+          cache_from:
+            - thedeep/deep-server:latest
+        env_file:
+            - .env-cern
+        environment:
+          - EBS_ENV_TYPE=web
+          - NO_DJANGO_MIGRATION=True
+        command: ['/code/deploy/scripts/prod_exec.sh']
+        ports:
+            - '8000:80'
+
+    celery: # Celery Workers
+        image: thedeep/deep-server:latest
+        build:
+          context: ./server/
+          cache_from:
+            - thedeep/deep-server:latest
+        env_file:
+            - .env-cern
+        environment:
+          - WORKER_TYPE=celery
+        command: ['/code/deploy/scripts/prod_exec.sh']
+
+    nginx: # NGINX Server
+        build: ./deploy/nginx
+        env_file:
+            - .env-cern
+        depends_on:
+            - channel
+        volumes:
+          - certs:/etc/letsencrypt
+          - ./deploy/nginx/config/:/etc/nginx/conf.d/:z
+        ports:
+            - '80:80'
+            - '443:443'
+
+volumes:
+  certs:

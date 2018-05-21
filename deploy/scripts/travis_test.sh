@@ -24,9 +24,10 @@ DEEP_SERVER_DEPLOY=`jq -r '.server.deploy' ${DEPLOY_CONFIG_PATH}`
 DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${DEPLOY_CONFIG_PATH}`
 set +e
 
-set -x
+set -ex
 if [ "${DEEP_SERVER_DEPLOY,,}" = "true" ]; then
     docker-compose up -d server
+    # CI=False to disable coverge report
     docker-compose exec server \
         bash -c 'export CI=false; /code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_tests.sh'
 fi
@@ -35,4 +36,4 @@ if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
     python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
     docker run -t thedeep/deep-client:latest bash -c 'CI=true yarn test'
 fi
-set +x
+set +ex
