@@ -6,7 +6,7 @@
         "ravl": "master"
     },
     "server": {
-        "deploy": false,
-        "server": "develop"
+        "deploy": true,
+        "server": "alpha"
     }
 }
