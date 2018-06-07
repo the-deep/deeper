@@ -3,10 +3,10 @@
         "deploy": true,
         "client": "alpha",
         "reactStore": "alpha",
-        "ravl": "master"
+        "ravl": "alpha"
     },
     "server": {
-        "deploy": true,
+        "deploy": false,
         "server": "alpha"
     }
 }
