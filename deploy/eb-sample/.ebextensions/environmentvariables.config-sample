@@ -54,6 +54,9 @@
     { "option_name": "DATABASE_HOST", "value": "${DATABASE_HOST}" },
     { "option_name": "DATABASE_PORT", "value": "${DATABASE_PORT}" },
 
+
+    { "option_name": "SES_AWS_ACCESS_KEY_ID", "value": "${SES_AWS_ACCESS_KEY_ID}" },
+    { "option_name": "SES_AWS_SECRET_ACCESS_KEY", "value": "${SES_AWS_SECRET_ACCESS_KEY}" },
     { "option_name": "USE_EMAIL_CONFIG", "value": "${USE_EMAIL_CONFIG}" },
     { "option_name": "EMAIL_FROM", "value": "${EMAIL_FROM}" },
     { "option_name": "EMAIL_HOST", "value": "${EMAIL_HOST}" },
