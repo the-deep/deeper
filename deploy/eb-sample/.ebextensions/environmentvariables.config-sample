@@ -66,5 +66,7 @@
 
     { "option_name": "CELERY_REDIS_URL", "value": "${CELERY_REDIS_URL}" },
     { "option_name": "CHANNEL_REDIS_URL", "value": "${CHANNEL_REDIS_URL}" }
+
+    { "option_name": "RAVEN_DSN", "value": "${RAVEN_DSN}" }
     ]
 }
