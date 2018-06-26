@@ -1,6 +1,7 @@
 {
   "option_settings": [
 
+    { "option_name": "DEEP_ENVIRONMENT", "value": "${DEEP_ENVIRONMENT}" },
     { "option_name": "EBS_ENV_TYPE", "value": "${TYPE}" },
 
     { "option_name": "DEPLOYMENT_ENV_NAME", "value": "${DEPLOYMENT_ENV_NAME}" },
