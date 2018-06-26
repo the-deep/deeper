@@ -147,6 +147,7 @@ printf "\n\n::::::::: Deploying React to S3 [Client] :::::::::::\n"
     CLIENT_DIR=${ROOT_DIR}/client
 
     echo "
+    REACT_APP_DEEP_ENVIRONMENT=${DEEP_ENVIRONMENT}
     REACT_APP_API_HTTPS=${DEEP_HTTPS}
     REACT_APP_API_END=${DJANGO_ALLOWED_HOST_API}
     REACT_APP_ADMIN_END=${DJANGO_ALLOWED_HOST_API}

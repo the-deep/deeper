@@ -23,10 +23,12 @@ set -x
 # Check if the branch is release candidate, use .env-dev config
 if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" ]; then
     echo "Deploying using Release Candidate ${DEEP_RC_BRANCH}";
+    export DEEP_ENVIRONMENT='alpha'
     DEEPER_DEPLOY_ENV_FILE=${ROOT_DIR}/.env-dev
 # if it is for production, use .env-prod config
 elif [ "${TRAVIS_BRANCH}" == "${DEEP_RC_PROD_BRANCH}" ]; then
-    echo "Deploying using Production Release Candidate ${DEEP_RC_PROD_BRANCH}";
+    echo "Deploying using Production [Beta] Release Candidate ${DEEP_RC_PROD_BRANCH}";
+    export DEEP_ENVIRONMENT='beta'
     DEEPER_DEPLOY_ENV_FILE=${ROOT_DIR}/.env-prod
 fi
 
