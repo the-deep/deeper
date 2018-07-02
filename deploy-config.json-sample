@@ -4,6 +4,10 @@
         "client": "develop",
         "reactStore": "develop",
         "ravl": "master"
+
+        "comment": "Optional Fields, default is the-deep/react-store and the-deep/ravl"
+        "reactStoreRepo": "https://github.com/toggle-corp/react-store",
+        "ravlRepo": "https://github.com/toggle-corp/ravl",
     },
     "server": {
         "deploy": true,

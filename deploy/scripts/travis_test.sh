@@ -13,7 +13,11 @@ if ! [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
 fi
 
 # Ignore Non RC Branch
-if ! [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" -o "${TRAVIS_BRANCH}" == "${DEEP_RC_PROD_BRANCH}" ]; then
+if ! [ \
+    "${TRAVIS_BRANCH}" == "${DEEP_RC_NIGHTLY_BRANCH}" -o \
+    "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" -o \
+    "${TRAVIS_BRANCH}" == "${DEEP_RC_PROD_BRANCH}" \
+    ]; then
     echo '[Travis Build] Non RC Branch'
     exit
 fi
