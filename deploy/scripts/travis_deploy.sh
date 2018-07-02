@@ -21,8 +21,12 @@ set +e
 
 set -x
 # Check if the branch is release candidate, use .env-dev config
-if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" ]; then
-    echo "Deploying using Release Candidate ${DEEP_RC_BRANCH}";
+if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_NIGHTLY_BRANCH}" ]; then
+    echo "Deploying using Release Candidate [Nightly]: ${DEEP_RC_NIGHTLY_BRANCH}";
+    export DEEP_ENVIRONMENT='nightly'
+    DEEPER_DEPLOY_ENV_FILE=${ROOT_DIR}/.env-nightly
+elif [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" ]; then
+    echo "Deploying using Release Candidate [Alpha]: ${DEEP_RC_BRANCH}";
     export DEEP_ENVIRONMENT='alpha'
     DEEPER_DEPLOY_ENV_FILE=${ROOT_DIR}/.env-dev
 # if it is for production, use .env-prod config

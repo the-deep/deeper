@@ -21,7 +21,11 @@ if ! [ "${TRAVIS_PULL_REQUEST}" == "false" ]; then
 fi
 
 # Ignore Non RC Branch
-if ! [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" -o "${TRAVIS_BRANCH}" == "${DEEP_RC_PROD_BRANCH}" ]; then
+if ! [ \
+    "${TRAVIS_BRANCH}" == "${DEEP_RC_NIGHTLY_BRANCH}" -o \
+    "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" -o \
+    "${TRAVIS_BRANCH}" == "${DEEP_RC_PROD_BRANCH}" \
+    ]; then
     echo '[Travis Build] Non RC Branch'
     exit
 fi
@@ -30,6 +34,10 @@ fi
 set -e
 DEEP_SERVER_DEPLOY=`jq -r '.server.deploy' ${DEPLOY_CONFIG_PATH}`
 DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${DEPLOY_CONFIG_PATH}`
+
+DEEP_REACT_STORE_REPO=$(jq -r ".client.reactStoreRepo // \"${DEEP_REACT_STORE_REPO}\"" ${DEPLOY_CONFIG_PATH})
+DEEP_RAVL_REPO=$(jq -r ".client.ravlRepo // \"${DEEP_RAVL_REPO}\"" ${DEPLOY_CONFIG_PATH})
+
 DEEP_SERVER_BRANCH=`jq -r '.server.server' ${DEPLOY_CONFIG_PATH}`
 DEEP_CLIENT_BRANCH=`jq -r '.client.client' ${DEPLOY_CONFIG_PATH}`
 DEEP_REACT_STORE_BRANCH=`jq -r '.client.reactStore' ${DEPLOY_CONFIG_PATH}`
