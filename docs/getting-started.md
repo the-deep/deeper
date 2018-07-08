@@ -3,7 +3,7 @@
 > Author: the one and the only [thenav56](https://github.com/thenav56)
 
 ## General
-What's the stack like? We're glad you asked. DEEP's server is powered by Django/Postres and we use React for most front end tasks. The whole kit and caboodle is wrapped up in Docker and you can easily deploy DEEP on your local machine to begin developing. 
+What's the stack like? We're glad you asked. DEEP's server is powered by Django/Postgresql and we use React for most front end tasks. The whole kit and caboodle is wrapped up in Docker and you can easily deploy DEEP on your local machine to begin developing. 
 
 The information below will help you get started on building DEEP locally.
 
@@ -67,19 +67,12 @@ docker-compose build
 - [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
 - [Redux DevTools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
 
-## Adding dependencies
+## Adding dependencies [Server]
 
 - Get into server container bash
 
     ```bash
     docker-compose exec server bash
-    ```
-
-- Adding Client Dependencies [JS]
-
-    ```bash
-    cd client/
-    yarn add <dependency>       # Installs dependency and updates package.json and yarn.lock
     ```
 
 - Adding Server Dependencies [Python]
@@ -96,6 +89,21 @@ docker-compose build
     ```
     - Permanently install a dependnacy
         - `docker-compose build` after `requirements.txt` is updated
+
+## Adding dependencies [Client]
+
+- Get into client container bash
+
+    ```bash
+    docker-compose exec client bash
+    ```
+
+- Adding Client Dependencies [JS]
+
+    ```bash
+    cd code/
+    yarn add <dependency>       # Installs dependency and updates package.json and yarn.lock
+    ```
 
 ## Running tests locally
 
@@ -121,49 +129,3 @@ docker-compose build
     yarn test o                 # Test only changed files
     yarn test --coverage        # Also generate coverage
     ```
-
-## Loading dummy data
-
-Dummy data is available in the form of csv files and can be loaded/updated with the `load_dummy_data`
-management command.
-
-> Load Dummy Data.
-
-Start containers
-```bash
-cd project-root-folder
-
-# Start Docker containers... you can start without -d if you just open another terminal at project-root-folder
-docker-compose up -d
-
-# ssh to server container
-docker-compose exec server bash
-```
-
-From outside container
-```bash
-docker-compose exec server bash -c "./scripts/load_dummy_data.sh"
-```
-
-From inside container [Optional]
-```
-# cd to django root folder
-cd /code/
-
-# activate python virtualenv
-. /venv/bin/activate
-
-# load dummy data
-python3 manage.py load_dummy_data
-
-# exit container
-exit
-```
-
-> Add Dummy Data.
-
-- csv filename should be same as the Model name  [`server/*/models.py`].
-- The csv file of the required model should be stored in its respective django app. [`server/*/dummy_data/`].
-- The `id` column maintains relatiosn between models and their instance in the database.
-- Look into the already added dummy_data for reference. [`server/geo/dummy_data/Region.csv`]
-    - Here the model is region, its class name is `Region` and its in the app `geo`
