@@ -6,7 +6,7 @@
         "ravl": "alpha"
     },
     "server": {
-        "deploy": false,
+        "deploy": true,
         "server": "alpha"
     }
 }
