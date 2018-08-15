@@ -38,6 +38,6 @@ fi
 
 if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
     python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
-    docker run -t thedeep/deep-client:latest bash -c 'CI=true yarn test'
+    docker run -t thedeep/deep-client:latest bash -c 'export CI=true && yarn install && yarn test'
 fi
 set +ex
