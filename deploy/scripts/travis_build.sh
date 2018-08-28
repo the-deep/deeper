@@ -65,15 +65,12 @@ if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
 
     git clone --branch=${DEEP_CLIENT_BRANCH} ${DEEP_CLIENT_REPO} ${CLIENT_PATH}
     git --git-dir=${CLIENT_PATH}/.git --no-pager show --pretty=fuller --quiet
-    export DEEP_CLIENT_COMMIT_SHA=$(git --git-dir=${CLIENT_PATH}/.git rev-parse HEAD)
 
     git clone --branch=${DEEP_REACT_STORE_BRANCH} ${DEEP_REACT_STORE_REPO} ${REACT_STORE_PATH}
     git --git-dir=${REACT_STORE_PATH}/.git --no-pager show --pretty=fuller --quiet
-    export DEEP_REACT_STORE_COMMIT_SHA=$(git --git-dir=${REACT_STORE_PATH}/.git rev-parse HEAD)
 
     git clone --branch=${DEEP_RAVL_BRANCH} ${DEEP_RAVL_REPO} ${RAVL_PATH}
     git --git-dir=${RAVL_PATH}/.git --no-pager show --pretty=fuller --quiet
-    export DEEP_RAVL_COMMIT_SHA=$(git --git-dir=${RAVL_PATH}/.git rev-parse HEAD)
 
     cp ${REACT_STORE_PATH}/stylesheets/_user-imports-sample.scss ${REACT_STORE_PATH}/stylesheets/_user-imports.scss
     docker pull thedeep/deep-client:latest
