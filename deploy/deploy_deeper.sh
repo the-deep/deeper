@@ -133,11 +133,13 @@ printf "\n\n::::: DOCKER TASK :::::\n"
 
 
             echo "  >> Deploying to eb [$TYPE]"
+                set -e;
                 if [ "${TRAVIS}" == "true" ]; then
                     eb deploy --nohang
                 else
                     eb deploy
                 fi
+                set +e;
             fi
     done
 fi

@@ -1,12 +1,19 @@
 sudo: required
 
+language: python
+
+python:
+  - "3.6"
+
 services:
     - docker
 
 before_install:
     - sudo apt-get install jq
-    - sudo pip install --upgrade awscli
-    - sudo pip install --upgrade awsebcli
+    - sudo apt-get remove python3-pip; sudo apt-get install python3-pip
+    - sudo pip3 install --upgrade awscli
+    - sudo pip3 install --upgrade awsebcli
+    - eb --version
 
     - env > .env
     - rm docker-compose.yml

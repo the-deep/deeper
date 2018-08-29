@@ -23,7 +23,7 @@ DEEP_SERVER_DEPLOY=`jq -r '.server.deploy' ${DEPLOY_CONFIG_PATH}`
 DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${DEPLOY_CONFIG_PATH}`
 set +e
 
-set -x
+set -ex
 # Check if the branch is release candidate, use .env-dev config
 if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_NIGHTLY_BRANCH}" ]; then
     echo "Deploying using Release Candidate [Nightly]: ${DEEP_RC_NIGHTLY_BRANCH}";
@@ -56,4 +56,4 @@ if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
     ./deploy/deploy_deeper.sh $DEEPER_DEPLOY_ENV_FILE client
 fi
 
-set +x
+set +ex
