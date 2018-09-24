@@ -68,6 +68,8 @@
     { "option_name": "CELERY_REDIS_URL", "value": "${CELERY_REDIS_URL}" },
     { "option_name": "CHANNEL_REDIS_URL", "value": "${CHANNEL_REDIS_URL}" },
 
-    { "option_name": "SENTRY_DSN", "value": "${SENTRY_DSN}" }
+    { "option_name": "SENTRY_DSN", "value": "${SENTRY_DSN}" },
+
+    { "option_name": "FLOWER_BASIC_AUTHS", "value": "${FLOWER_BASIC_AUTHS}" }
     ]
 }

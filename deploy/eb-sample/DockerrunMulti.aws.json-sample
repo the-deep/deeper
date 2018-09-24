@@ -10,6 +10,12 @@
       "image": "DOCKER_IMAGE:DOCKER_TAG",
       "essential": true,
       "memoryReservation": 500,
+      "portMappings": [
+        {
+          "hostPort": 80,
+          "containerPort": 80
+        }
+      ],
       "environment": [
         {
           "name": "WORKER_TYPE",
