@@ -9,31 +9,10 @@
       "name": "deeper-celery",
       "image": "DOCKER_IMAGE:DOCKER_TAG",
       "essential": true,
-      "memory": 400,
-      "memoryReservation": 300,
       "environment": [
         {
           "name": "WORKER_TYPE",
           "value": "celery"
-        }
-      ]
-    },
-    {
-      "name": "deeper-channel",
-      "image": "DOCKER_IMAGE:DOCKER_TAG",
-      "essential": true,
-      "memory": 400,
-      "memoryReservation": 300,
-      "portMappings": [
-        {
-          "hostPort": 80,
-          "containerPort": 80
-        }
-      ],
-      "environment": [
-        {
-          "name": "WORKER_TYPE",
-          "value": "channel"
         }
       ]
     }
