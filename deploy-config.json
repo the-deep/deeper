@@ -1,6 +1,6 @@
 {
     "client": {
-        "deploy": true,
+        "deploy": false,
         "client": "alpha",
         "reactStore": "alpha",
         "ravl": "alpha"
