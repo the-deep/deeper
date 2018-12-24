@@ -5,7 +5,6 @@ ROOT_DIR=$(dirname "$(dirname "$BASE_DIR")") # /code/
 
 CLIENT_PATH=${ROOT_DIR}/client
 REACT_STORE_PATH=${CLIENT_PATH}/src/vendor/react-store
-RAVL_PATH=${CLIENT_PATH}/src/vendor/ravl
 
 DEPLOY_CONFIG_PATH=$ROOT_DIR/deploy-config.json
 
@@ -50,7 +49,6 @@ if [ "${DEEP_SERVER_DEPLOY,,}" = "true" ]; then
     ./deploy/deploy_deeper.sh $DEEPER_DEPLOY_ENV_FILE server
 fi
 if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
-    export DEEP_RAVL_COMMIT_SHA=$(git --git-dir=${RAVL_PATH}/.git rev-parse HEAD)
     export DEEP_CLIENT_COMMIT_SHA=$(git --git-dir=${CLIENT_PATH}/.git rev-parse HEAD)
     export DEEP_REACT_STORE_COMMIT_SHA=$(git --git-dir=${REACT_STORE_PATH}/.git rev-parse HEAD)
     ./deploy/deploy_deeper.sh $DEEPER_DEPLOY_ENV_FILE client

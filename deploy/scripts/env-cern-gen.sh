@@ -32,6 +32,7 @@ envsubst < $SAMPLE_DIR/.ebextensions/environmentvariables.config-sample | \
     jq -r \
         '.option_settings[]|.option_name as $option_name|.value as $value| [$option_name, $value]|join("=")' \
         > $ROOT_DIR/.env-cern
+echo 'DEEP_ENVIRONMENT=beta' >> $ROOT_DIR/.env-cern
 echo "DEPLOYMENT_REGION=${DEPLOYMENT_REGION}" >> $ROOT_DIR/.env-cern
 echo 'IN_CERN=True' >> $ROOT_DIR/.env-cern
 

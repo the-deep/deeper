@@ -9,6 +9,7 @@ services:
             - thedeep/deep-server:latest
         env_file:
             - .env-cern
+        restart: unless-stopped
         environment:
           - EBS_ENV_TYPE=web
           - NO_DJANGO_MIGRATION=True
@@ -22,6 +23,7 @@ services:
           context: ./server/
           cache_from:
             - thedeep/deep-server:latest
+        restart: unless-stopped
         env_file:
             - .env-cern
         environment:
