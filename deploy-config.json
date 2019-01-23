@@ -6,7 +6,7 @@
         "ravl": "alpha"
     },
     "server": {
-        "deploy": true,
+        "deploy": false,
         "server": "release-v1.2.3"
     }
 }
