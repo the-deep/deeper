@@ -1,12 +1,13 @@
 {
     "client": {
         "deploy": true,
-        "client": "release-v1.2.3",
+        "client": "nepware-feature-lead-grid-view",
         "reactStore": "release-v1.2.3",
+        "reactComponents": "master",
         "ravl": "alpha"
     },
     "server": {
-        "deploy": false,
-        "server": "release-v1.2.3"
+        "deploy": true,
+        "server": "nepware-feature-lead-grid-view"
     }
 }

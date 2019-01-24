@@ -6,10 +6,12 @@ ROOT_DIR=$(dirname "$(dirname "$BASE_DIR")") # /code/
 DEEP_SERVER_REPO='https://github.com/the-deep/server.git'
 DEEP_CLIENT_REPO='https://github.com/the-deep/client.git'
 DEEP_REACT_STORE_REPO='https://github.com/the-deep/react-store'
+DEEP_REACT_COMPONENTS_REPO='https://github.com/timilsinabishal/react-components'
 
 SERVER_PATH=${ROOT_DIR}/server
 CLIENT_PATH=${ROOT_DIR}/client
 REACT_STORE_PATH=${CLIENT_PATH}/src/vendor/react-store
+REACT_COMPONENTS_PATH=${CLIENT_PATH}/src/vendor/react-components
 DEPLOY_CONFIG_PATH=$ROOT_DIR/deploy-config.json
 
 # Ignore Pull requets
@@ -38,6 +40,7 @@ DEEP_REACT_STORE_REPO=$(jq -r ".client.reactStoreRepo // \"${DEEP_REACT_STORE_RE
 DEEP_SERVER_BRANCH=`jq -r '.server.server' ${DEPLOY_CONFIG_PATH}`
 DEEP_CLIENT_BRANCH=`jq -r '.client.client' ${DEPLOY_CONFIG_PATH}`
 DEEP_REACT_STORE_BRANCH=`jq -r '.client.reactStore' ${DEPLOY_CONFIG_PATH}`
+DEEP_REACT_COMPONENTS_BRANCH=`jq -r '.client.reactComponents' ${DEPLOY_CONFIG_PATH}`
 DEEP_RAVL_BRANCH=`jq -r '.client.ravl' ${DEPLOY_CONFIG_PATH}`
 set +e
 
@@ -65,6 +68,9 @@ if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
 
     git clone --branch=${DEEP_REACT_STORE_BRANCH} ${DEEP_REACT_STORE_REPO} ${REACT_STORE_PATH}
     git --git-dir=${REACT_STORE_PATH}/.git --no-pager show --pretty=fuller --quiet
+
+    git clone --branch=${DEEP_REACT_COMPONENTS_BRANCH} ${DEEP_REACT_COMPONENTS_REPO} ${REACT_COMPONENTS_PATH}
+    git --git-dir=${REACT_COMPONENTS_PATH}/.git --no-pager show --pretty=fuller --quiet
 
     cp ${REACT_STORE_PATH}/stylesheets/_user-imports-sample.scss ${REACT_STORE_PATH}/stylesheets/_user-imports.scss
     docker pull thedeep/deep-client:latest
