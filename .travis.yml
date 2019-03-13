@@ -1,9 +1,6 @@
 sudo: required
 
-language: python
-
-python:
-  - "3.6"
+language: generic
 
 services:
     - docker
@@ -11,6 +8,7 @@ services:
 before_install:
     - sudo apt-get install jq
     - sudo apt-get remove python3-pip; sudo apt-get install python3-pip
+    - sudo pip3 install -U setuptools
     - sudo pip3 install --upgrade awscli
     - sudo pip3 install --upgrade awsebcli
     - eb --version

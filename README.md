@@ -19,6 +19,5 @@ If you are interested in contributing, please checkout the information below and
 
 ## Staging Servers
 
-- [Development website](http://deeper.togglecorp.com)
-- [API](http://api.deeper.togglecorp.com)
-- [Websocket](http://websocket.deeper.togglecorp.com)
+- [Development website](https://alpha.thedeep.io)
+- [API](https://api.alpha.thedeep.io)

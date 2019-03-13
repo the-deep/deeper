@@ -173,8 +173,8 @@ printf "\n\n::::::::: Deploying React to S3 [Client] :::::::::::\n"
     rm ${CLIENT_DIR}/.env
 
     echo "::::::  >> Remove Previous Builds Files [js, css] From S3 Bucket [$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC]"
-    aws s3 rm s3://$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC/static/js --recursive
-    aws s3 rm s3://$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC/static/css --recursive
+    # aws s3 rm s3://$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC/js --recursive
+    # aws s3 rm s3://$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC/css --recursive
     echo "::::::  >> Uploading New Builds Files To S3 Bucket [$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC]"
     aws s3 sync ${CLIENT_DIR}/build/ s3://$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC
     echo "::::::  >> Settings Configs for Bucket [$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC]"
