@@ -32,12 +32,15 @@ mv docker-travis.yml docker-compose.yml
 if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_NIGHTLY_BRANCH}" ]; then
     echo "Generate config for Nightly for branch: ${DEEP_RC_NIGHTLY_BRANCH}"
     openssl aes-256-cbc -k "$encrypted_nightly_key" -in .env-nightly.enc -out .env-nightly -d
+    openssl aes-256-cbc -k "$encrypted_nightly_patch_key" -in .env-nightly-patch.enc -d >> .env-nightly
 elif [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" ]; then
     echo "Generate config for Alpha for branch: ${DEEP_RC_BRANCH}"
     openssl aes-256-cbc -k "$encrypted_dev_key" -in .env-dev.enc -out .env-dev -d
+    openssl aes-256-cbc -k "$encrypted_dev_patch_key" -in .env-dev-patch.enc -d >> .env-dev
 elif [ "${TRAVIS_BRANCH}" == "${DEEP_RC_PROD_BRANCH}" ]; then
     echo "Generate config for Prod for branch: ${DEEP_RC_PROD_BRANCH}"
     openssl aes-256-cbc -k "$encrypted_prod_key" -in .env-prod.enc -out .env-prod -d
+    openssl aes-256-cbc -k "$encrypted_prod_patch_key" -in .env-prod-patch.enc -d >> .env-prod
 else
     echo "No env found for current branch: ${TRAVIS_BRANCH}... exiting..."
 fi
