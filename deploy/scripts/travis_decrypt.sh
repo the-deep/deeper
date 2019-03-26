@@ -36,7 +36,6 @@ if [ "${TRAVIS_BRANCH}" == "${DEEP_RC_NIGHTLY_BRANCH}" ]; then
 elif [ "${TRAVIS_BRANCH}" == "${DEEP_RC_BRANCH}" ]; then
     echo "Generate config for Alpha for branch: ${DEEP_RC_BRANCH}"
     openssl aes-256-cbc -k "$encrypted_dev_key" -in .env-dev.enc -out .env-dev -d
-    echo "Encrypting using dev-patch key"
     openssl aes-256-cbc -k "$encrypted_dev_patch_key" -in .env-dev-patch.enc -d >> .env-dev
 elif [ "${TRAVIS_BRANCH}" == "${DEEP_RC_PROD_BRANCH}" ]; then
     echo "Generate config for Prod for branch: ${DEEP_RC_PROD_BRANCH}"
