@@ -12,7 +12,7 @@
 
 ## Branch
 
-There are 5 major branchlines:
+There are 5 major branch-lines:
 1. develop
 2. feature
 3. release
@@ -32,7 +32,7 @@ Once merged, the branch *feature-M* is deleted.
 
 ### Release
 Branch *master* is a long-running branch.
-Once all features are completed for a relase, branch *release-N* starts from branch *develop*.
+Once all features are completed for a release, branch *release-N* starts from branch *develop*.
 Never create branch *feature-M* in branch *release-N*.
 Never merge branch *relase* into branch *develop*.
 
@@ -71,7 +71,7 @@ git checkout -b FEATURE_NAME
 
     - Repent at your nearest place of worship
 
-    - If you haven’t pushed...
+    - If you haven't pushed...
     ```bash
     # Make a new branch with the new commits
     git checkout -b new-branch

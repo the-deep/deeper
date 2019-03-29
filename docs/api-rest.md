@@ -18,7 +18,7 @@ Authorization: Bearer <JWT>
 
 #### Access Tokens
 
-This is sent in all types of API requests for authorization. It is a fast authentication and doesn’t check for scenarious such as if a user has changed their password. This token typically expires every hour.
+This is sent in all types of API requests for authorization. It is a fast authentication and doesn't check for scenarios such as if a user has changed their password. This token typically expires every hour.
 
 If an invalid or expired token is provided, a 401 error with message "Token is invalid or expired" is returned in the response.
 
@@ -165,7 +165,7 @@ they need to directly correspond to proper sql column names, which by convention
 
 #### Client Errors:
 
-* 400 :	Bad request: the json request doesn’t contain proper fields
+* 400 :	Bad request: the json request doesn't contain proper fields
 * 401 :	Unauthorized: needs a logged in user
 * 403 :	Forbidden: user does not have permission for the requested resource
 * 404 :	Resource is not found in the database
