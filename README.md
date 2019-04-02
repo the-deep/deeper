@@ -8,7 +8,7 @@ If you are interested in contributing, please checkout the information below and
 
 ## References
 
-- [Creating an issue realted to deep](docs/create-issue.md)
+- [Creating an issue related to deep](docs/create-issue.md)
 - [Contributing - Getting Started](docs/getting-started.md)
 - [Contributing - The Details... Frontend](docs/contributing_frontend.md)
 - [Contributing - The Details... Backend](docs/contributing_backend.md)
