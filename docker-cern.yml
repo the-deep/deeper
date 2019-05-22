@@ -23,6 +23,7 @@ services:
           context: ./server/
           cache_from:
             - thedeep/deep-server:latest
+        shm_size: '2gb'
         restart: unless-stopped
         env_file:
             - .env-cern

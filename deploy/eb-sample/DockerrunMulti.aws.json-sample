@@ -1,27 +1,30 @@
 {
-  "AWSEBDockerrunVersion": 2,
-  "Authentication": {
+    "AWSEBDockerrunVersion": 2,
+    "Authentication": {
         "Bucket": "DEPLOYMENT_BUCKET",
         "Key": "DOCKER_AUTH_FILE"
-  },
-  "containerDefinitions": [
-    {
-      "name": "deeper-celery",
-      "image": "DOCKER_IMAGE:DOCKER_TAG",
-      "essential": true,
-      "memoryReservation": 500,
-      "portMappings": [
-        {
-          "hostPort": 80,
-          "containerPort": 80
+    },
+    "volumes": [{
+        "name": "host-shm",
+        "host": {
+            "sourcePath": "/dev/shm"
         }
-      ],
-      "environment": [
-        {
-          "name": "WORKER_TYPE",
-          "value": "celery"
-        }
-      ]
-    }
-  ]
+    }],
+    "containerDefinitions": [{
+        "name": "deeper-celery",
+        "image": "DOCKER_IMAGE:DOCKER_TAG",
+        "essential": true,
+        "mountPoints": [{
+            "sourceVolume": "host-shm",
+            "containerPath": "/dev/shm"
+        }],
+        "portMappings": [{
+            "hostPort": 80,
+            "containerPort": 80
+        }],
+        "environment": [{
+            "name": "WORKER_TYPE",
+            "value": "celery"
+        }]
+    }]
 }
