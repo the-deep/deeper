@@ -38,10 +38,9 @@ DEEP_REACT_STORE_REPO=$(jq -r ".client.reactStoreRepo // \"${DEEP_REACT_STORE_RE
 DEEP_SERVER_BRANCH=`jq -r '.server.server' ${DEPLOY_CONFIG_PATH}`
 DEEP_CLIENT_BRANCH=`jq -r '.client.client' ${DEPLOY_CONFIG_PATH}`
 DEEP_REACT_STORE_BRANCH=`jq -r '.client.reactStore' ${DEPLOY_CONFIG_PATH}`
-DEEP_RAVL_BRANCH=`jq -r '.client.ravl' ${DEPLOY_CONFIG_PATH}`
 set +e
 
-set -x
+set -ex
 cd $ROOT_DIR
 
 # Build server
@@ -66,8 +65,7 @@ if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
     git clone --branch=${DEEP_REACT_STORE_BRANCH} ${DEEP_REACT_STORE_REPO} ${REACT_STORE_PATH}
     git --git-dir=${REACT_STORE_PATH}/.git --no-pager show --pretty=fuller --quiet
 
-    cp ${REACT_STORE_PATH}/stylesheets/_user-imports-sample.scss ${REACT_STORE_PATH}/stylesheets/_user-imports.scss
     docker pull thedeep/deep-client:latest
     docker build --cache-from thedeep/deep-client:latest --tag thedeep/deep-client:latest ${CLIENT_PATH}
 fi
-set +x
+set +ex
