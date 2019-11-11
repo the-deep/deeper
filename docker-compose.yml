@@ -21,6 +21,7 @@ services:
           context: ./server/
           cache_from:
             - thedeep/deep-server:latest
+        tty: true
         env_file:
             - .env
         command: bash -c '/code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_develop.sh'
@@ -39,6 +40,7 @@ services:
           context: ./client/
           cache_from:
             - thedeep/deep-client:latest
+        tty: true
         env_file:
             - .env
         command: bash -c '/code/scripts/run_develop.sh'
