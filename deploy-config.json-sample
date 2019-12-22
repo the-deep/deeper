@@ -3,9 +3,11 @@
         "deploy": true,
         "client": "develop",
         "reactStore": "develop",
+        "reMap: "develop",
 
         "comment": "Optional Fields, default is the-deep/react-store and the-deep/ravl"
         "reactStoreRepo": "https://github.com/toggle-corp/react-store",
+        "reMapRepo": "https://github.com/toggle-corp/re-map",
     },
     "server": {
         "deploy": true,

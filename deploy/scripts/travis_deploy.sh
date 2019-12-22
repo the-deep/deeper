@@ -5,6 +5,7 @@ ROOT_DIR=$(dirname "$(dirname "$BASE_DIR")") # /code/
 
 CLIENT_PATH=${ROOT_DIR}/client
 REACT_STORE_PATH=${CLIENT_PATH}/src/vendor/react-store
+RE_MAP_PATH=${CLIENT_PATH}/src/vendor/re-map
 
 DEPLOY_CONFIG_PATH=$ROOT_DIR/deploy-config.json
 
@@ -51,6 +52,7 @@ fi
 if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
     export DEEP_CLIENT_COMMIT_SHA=$(git --git-dir=${CLIENT_PATH}/.git rev-parse HEAD)
     export DEEP_REACT_STORE_COMMIT_SHA=$(git --git-dir=${REACT_STORE_PATH}/.git rev-parse HEAD)
+    export DEEP_RE_MAP_COMMIT_SHA=$(git --git-dir=${RE_MAP_PATH}/.git rev-parse HEAD)
     ./deploy/deploy_deeper.sh $DEEPER_DEPLOY_ENV_FILE client
 fi
 

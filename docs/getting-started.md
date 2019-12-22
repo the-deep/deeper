@@ -3,14 +3,17 @@
 > Author: the one and the only [thenav56](https://github.com/thenav56)
 
 ## General
-What's the stack like? We're glad you asked. DEEP's server is powered by Django/Postgresql and we use React for most front end tasks. The whole kit and caboodle is wrapped up in Docker and you can easily deploy DEEP on your local machine to begin developing. 
+What's the stack like? We're glad you asked. DEEP's server is powered by
+Django/Postgresql and we use React for most front end tasks. The whole kit and
+caboodle is wrapped up in Docker and you can easily deploy DEEP on your local
+machine to begin developing. 
 
 The information below will help you get started on building DEEP locally.
 
 ## Dependencies
-Most of the dependencies for the deeper are provided in Dockerfile, package.json and requirements.txt which are installed automatically using docker.
-
-But two dependency has to be cloned manually: [react-store](http://github.com/toggle-corp/react-store/) and [ravl](http://github.com/toggle-corp/ravl/)
+Most of the dependencies for the deeper are provided in Dockerfile,
+package.json and requirements.txt which are installed automatically using
+docker.
 
 ```bash
 # Clone Deeper Repo
@@ -26,17 +29,17 @@ git clone https://github.com/the-deep/client.git
 # Setup client
 cd client
 yarn vendor:clone
-cp client/src/vendor/react-store/stylesheets/_user-imports-sample.scss client/src/vendor/react-store/stylesheets/_user-imports.scss
 ```
 
 
 ## Building
 
 Install `docker` and `docker-compose v3`...
+And run the following commands every time dependencies are updated.
 
-And run the following commands everytime dependencies are updated.
 ```bash
 cd deep-project-root
+
 docker-compose pull
 docker-compose build
 ```
@@ -44,17 +47,20 @@ docker-compose build
 ## Useful commands for running Docker
 
 - Starting docker containers
+
     ```bash
     docker-compose up               # non-detached mode, shows logs, ctrl+c to exit
     docker-compose up -d            # detached mode, runs in background
     ```
 - Viewing logs (for detached mode)
+
     ```bash
     docker-compose logs -f          # view logs -f is for flow
     docker-compose logs -f server      # view logs for server container
     ```
 
 - Running commands
+
     ```bash
     docker-compose exec server <command>    # Run commands inside server container
     docker-compose exec server bash         # Get into server container's bash
