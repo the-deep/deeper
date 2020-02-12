@@ -7,7 +7,8 @@ services:
 
 before_install:
     - sudo apt-get install jq
-    - sudo apt-get remove python3-pip; sudo apt-get install python3-pip
+    - sudo apt-get remove python3-pip
+    - sudo apt-get install python3-pip python3-setuptools python3-wheel
     - sudo pip3 install -U setuptools
     - sudo pip3 install --upgrade awscli
     - sudo pip3 install --upgrade awsebcli
