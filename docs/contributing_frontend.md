@@ -18,6 +18,8 @@
     ├── stylesheets/
     ├── topic/
     └── vendor/
+        ├── react-store/    ->  react-store[http://github.com/the-deep/react-store]
+        └── re-map/         ->  re-map[http://github.com/the-deep/re-map]
 ```
 
 ## React
