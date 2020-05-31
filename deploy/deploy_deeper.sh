@@ -167,7 +167,7 @@ printf "\n\n::::::::: Deploying React to S3 [Client] :::::::::::\n"
     python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)"
     docker run -t -v ${CLIENT_DIR}/build:/code/build --env-file=${CLIENT_DIR}/.env \
         thedeep/deep-client:latest \
-        bash -c 'yarn install && CI=false yarn build'
+        bash -c 'yarn install && CI=false NODE_OPTIONS=--max_old_space_size=4096 yarn build'
     set +e;
 
     rm ${CLIENT_DIR}/.env
@@ -186,21 +186,4 @@ printf "\n\n::::::::: Deploying React to S3 [Client] :::::::::::\n"
         --metadata-directive REPLACE --cache-control max-age=0,no-cache,no-store,must-revalidate --content-type application/javascript --acl public-read
     # S3 website settings config
     aws s3 website s3://$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC --index-document index.html --error-document index.html
-
-    # Clear cloudflare cache [only for deeper.togglecorp.com ]
-    echo ":::::: Clear cloudflare cache"
-    # Get the zones
-    CLOUDFLARE_ZONES=($(curl -X GET "https://api.cloudflare.com/client/v4/zones" \
-         -H "X-Auth-Email: ${CLOUDFLARE_EMAIL}" \
-         -H "X-Auth-Key: ${CLOUDFLARE_KEY}" \
-         -H "Content-Type: application/json" | jq -r '.result[].id'))
-
-    for CLOUDFLARE_ZONE in ${CLOUDFLARE_ZONES[@]}; do
-        # Clear the cache
-        curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE}/purge_cache" \
-             -H "X-Auth-Email: ${CLOUDFLARE_EMAIL}" \
-             -H "X-Auth-Key: ${CLOUDFLARE_KEY}" \
-             -H "Content-Type: application/json" \
-             --data '{"purge_everything":true}'
-    done
 fi
