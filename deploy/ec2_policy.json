@@ -1,0 +1,41 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "BucketAccess",
+            "Action": [
+                "s3:Get*",
+                "s3:Head*",
+                "s3:List*",
+                "s3:Put*",
+                "s3:DeleteObject"
+            ],
+            "Effect": "Allow",
+            "Resource": [
+                "arn:aws:s3:::__BUCKET_NAME_HERE__",
+                "arn:aws:s3:::__BUCKET_NAME_HERE__/*"
+            ]
+        },
+        {
+            "Sid": "SimpleEmailServiceAccess",
+            "Action": [
+                "ses:GetSendQuota",
+                "ses:SendEmail",
+                "ses:SendRawEmail"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        },
+        {
+            "Sid": "CloudWatchMetricUpdateAccess",
+            "Action": [
+                "cloudwatch:PutMetricData",
+                "cloudwatch:GetMetricStatistics",
+                "cloudwatch:ListMetrics",
+                "ec2:DescribeTags"
+            ],
+            "Effect": "Allow",
+            "Resource": "*"
+        }
+    ]
+}

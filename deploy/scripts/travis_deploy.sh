@@ -46,9 +46,11 @@ if [ -z ${DEEPER_DEPLOY_ENV_FILE+x} ]; then
 fi
 
 if [ "${DEEP_SERVER_DEPLOY,,}" = "true" ]; then
+    printf "\n\n:::::::::::::::::: Deploying Server ::::::::::::::::::::\n"
     ./deploy/deploy_deeper.sh $DEEPER_DEPLOY_ENV_FILE server
 fi
 if [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
+    printf "\n\n:::::::::::::::::: Deploying Client ::::::::::::::::::::\n"
     export DEEP_CLIENT_COMMIT_SHA=$(git --git-dir=${CLIENT_PATH}/.git rev-parse HEAD)
     export DEEP_REACT_STORE_COMMIT_SHA=$(git --git-dir=${REACT_STORE_PATH}/.git rev-parse HEAD)
     ./deploy/deploy_deeper.sh $DEEPER_DEPLOY_ENV_FILE client

@@ -58,20 +58,26 @@ printf "\n\n::::: DOCKER TASK :::::\n"
         docker push $DOCKER_USERNAME/$DOCKER_REPOSITORY:$DOCKER_BUILD_ID
     set +e;
 
+    echo "  >> Uploading docker login credentials to S3"
+    # https://stackoverflow.com/questions/31395904/deploy-image-to-aws-elastic-beanstalk-from-private-docker-repo
+    jq -r '.auths' ~/.docker/config.json > .mydockercfg
+    aws s3 cp .mydockercfg s3://$DEPLOYMENT_BUCKET/$DEPLOYMENT_DOCKER_AUTH_KEY
+    rm .mydockercfg
+
     printf "\n\n:::::::: Generating Configs From ENVIRONMENT VARIABLES ::::::::"
     ENV_TYPE=(web worker)
 
-    for TYPE in ${ENV_TYPE[@]}; do
-        export TYPE
-        if [ "${DJANGO_ONLY_DEPLOY}" == "" ] || [ "${DJANGO_ONLY_DEPLOY}" == "${TYPE}" ] ; then
-            printf "\n\n::::::::::::::::::::: Config for EB [$TYPE] :::::::::::::::::::::\n"
-            TYPE_DIR=$ROOT_DIR/deploy/eb/$TYPE
+    for EBS_ENV_TYPE in ${ENV_TYPE[@]}; do
+        export EBS_ENV_TYPE
+        if [ "${DJANGO_ONLY_DEPLOY}" == "" ] || [ "${DJANGO_ONLY_DEPLOY}" == "${EBS_ENV_TYPE}" ] ; then
+            printf "\n\n::::::::::::::::::::: Config for EB [$EBS_ENV_TYPE] :::::::::::::::::::::\n"
+            TYPE_DIR=$ROOT_DIR/deploy/eb/$EBS_ENV_TYPE
             # rm -rf $TYPE_DIR
             mkdir -p $TYPE_DIR/.ebextensions
             cd $TYPE_DIR
 
             echo "  >> Creating .elasticbeanstalk/config.yml file :::::"
-            if [ ${TYPE} == 'web' ]; then
+            if [ ${EBS_ENV_TYPE} == 'web' ]; then
                 echo "1" | eb init $DEPLOYMENT_APP_NAME --region $DEPLOYMENT_REGION && eb use $DEPLOYMENT_ENV_NAME_WEB
                 export DEPLOYMENT_ENV_NAME=$DEPLOYMENT_ENV_NAME_WEB
             else
@@ -81,58 +87,42 @@ printf "\n\n::::: DOCKER TASK :::::\n"
 
             echo "::::::: Creating additional configs :::::"
 
-                if [ ${TYPE} == 'web' ]; then
-                    echo "      >> Creating remote_log for ec2 instance"
-                    cp $EB_SAMPLE_DIR/.ebextensions/remote_log.config-sample ./.ebextensions/remote_log.config
-                    sed "s/host:.*/host: $PAPERTRAIL_HOST/" -i ./.ebextensions/remote_log.config
-                    sed "s/port:.*/port: $PAPERTRAIL_PORT/" -i ./.ebextensions/remote_log.config
-                fi
-
-                echo "      >> Creating environmentvariables [validation environmentvariables]"
+                echo "      >> Creating environmentvariables"
                 set -e;
-                    envsubst < $EB_SAMPLE_DIR/.ebextensions/environmentvariables.config-sample | \
-                        jq -r '.' > ./.ebextensions/environmentvariables.config # validate json and export
+                    envsubst < $EB_SAMPLE_DIR/.ebextensions/environmentvariables-sample.config | \
+                        yq r - > ./.ebextensions/environmentvariables.config # validate yaml and export
                 set +e;
 
-                if [ ${TYPE} == 'web' ]; then
+                if [ ${EBS_ENV_TYPE} == 'web' ]; then
+                    echo "      >> Creating remote_log for ec2 instance"
+                    cp $EB_SAMPLE_DIR/.ebextensions/remote_log-sample.config ./.ebextensions/remote_log.config
+                    sed "s/host:.*/host: $PAPERTRAIL_HOST/" -i ./.ebextensions/remote_log.config
+                    sed "s/port:.*/port: $PAPERTRAIL_PORT/" -i ./.ebextensions/remote_log.config
+
                     echo "      >> Creating nginx.conf"
-                        cp $EB_SAMPLE_DIR/.ebextensions/01_nginx.config ./.ebextensions/01_nginx.config
-                        cp $EB_SAMPLE_DIR/.ebextensions/nginx.conf-sample ./.ebextensions/nginx.conf
-                        sed "s/server_name #ALLOWED_HOST.*/server_name $DJANGO_ALLOWED_HOST_API;/" -i ./.ebextensions/nginx.conf
-                        sed "s/proxy_pass #S3_BUCKET_NAME_STATIC.*/proxy_pass https:\/\/$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC.s3.amazonaws.com\/static;/" -i ./.ebextensions/nginx.conf
-                        sed "s/proxy_pass #S3_BUCKET_NAME_MEDIA.*/proxy_pass https:\/\/$DJANGO_AWS_STORAGE_BUCKET_NAME_MEDIA.s3.amazonaws.com\/media;/" -i ./.ebextensions/nginx.conf
-                fi
+                    cp $EB_SAMPLE_DIR/.ebextensions/web_containers_commands.config ./.ebextensions/web_containers_commands.config
+                    cp $EB_SAMPLE_DIR/.ebextensions/nginx-sample.conf ./.ebextensions/nginx.conf
+                    sed "s/server_name #ALLOWED_HOST.*/server_name $DJANGO_ALLOWED_HOST;/" -i ./.ebextensions/nginx.conf
+                    sed "s/proxy_pass #S3_BUCKET_NAME_STATIC.*/proxy_pass https:\/\/$DJANGO_AWS_STORAGE_BUCKET_NAME_STATIC.s3.amazonaws.com\/static;/" -i ./.ebextensions/nginx.conf
 
-                echo "      >> Creating .mydockercfg "
-                    DOCKER_AUTH_TOKEN=($(jq -r '.auths["https://index.docker.io/v1/"].auth' ~/.docker/config.json))
-                    cat $EB_SAMPLE_DIR/.mydockercfg-sample \
-                        | sed 's\DOCKER_AUTH\'$DOCKER_AUTH_TOKEN'\' \
-                        | sed 's\DOCKER_EMAIL\'$LOGIN_DOCKER_EMAIL'\' \
-                        > ./.mydockercfg
-
-                echo "      >> Uploading .mydockercfg "
-                aws s3 cp ./.mydockercfg s3://$DEPLOYMENT_BUCKET/$DEPLOYMENT_DOCKER_AUTH_KEY
-
-                if [ ${TYPE} == 'web' ]; then
                     echo "      >> Creating Dockerrun.aws.json "
-                        cat $EB_SAMPLE_DIR/Dockerrun.aws.json-sample \
+                        cat $EB_SAMPLE_DIR/Dockerrun-sample.aws.json \
                             | sed 's\DEPLOYMENT_BUCKET\'$DEPLOYMENT_BUCKET'\' \
-                            | sed 's\DOCKER_AUTH_FILE\'.mydockercfg'\' \
+                            | sed 's\DOCKER_AUTH_FILE\'$DEPLOYMENT_DOCKER_AUTH_KEY'\' \
                             | sed 's\DOCKER_IMAGE\'$DOCKER_USERNAME/$DOCKER_REPOSITORY'\' \
                             | sed 's\DOCKER_TAG\'$DOCKER_BUILD_ID'\' \
                             > ./Dockerrun.aws.json
                 else
-                    echo "      >> Creating Dockerrun.aws.json "
-                        cat $EB_SAMPLE_DIR/DockerrunMulti.aws.json-sample \
+                    echo "      >> Creating DockerrunMulti.aws.json "
+                        cat $EB_SAMPLE_DIR/DockerrunMulti-sample.aws.json \
                             | sed 's\DEPLOYMENT_BUCKET\'$DEPLOYMENT_BUCKET'\' \
-                            | sed 's\DOCKER_AUTH_FILE\'.mydockercfg'\' \
+                            | sed 's\DOCKER_AUTH_FILE\'$DEPLOYMENT_DOCKER_AUTH_KEY'\' \
                             | sed 's\DOCKER_IMAGE\'$DOCKER_USERNAME/$DOCKER_REPOSITORY'\g' \
                             | sed 's\DOCKER_TAG\'$DOCKER_BUILD_ID'\g' \
                             > ./Dockerrun.aws.json
                 fi
 
-
-            echo "  >> Deploying to eb [$TYPE]"
+            echo "  >> Deploying to eb [$EBS_ENV_TYPE]"
                 set -e;
                 if [ "${TRAVIS}" == "true" ]; then
                     eb deploy --nohang
@@ -153,8 +143,8 @@ printf "\n\n::::::::: Deploying React to S3 [Client] :::::::::::\n"
     REACT_APP_DEEP_COMMIT_SHA=${DEEP_CLIENT_COMMIT_SHA}
     REACT_APP_DEEP_ENVIRONMENT=${DEEP_ENVIRONMENT}
     REACT_APP_API_HTTPS=${DEEP_HTTPS}
-    REACT_APP_API_END=${DJANGO_ALLOWED_HOST_API}
-    REACT_APP_ADMIN_END=${DJANGO_ALLOWED_HOST_API}
+    REACT_APP_API_END=${DJANGO_ALLOWED_HOST}
+    REACT_APP_ADMIN_END=${DJANGO_ALLOWED_HOST}
     REACT_APP_HID_CLIENT_ID=${HID_CLIENT_ID}
     REACT_APP_HID_CLIENT_REDIRECT_URL=${HID_CLIENT_REDIRECT_URL}
     REACT_APP_HID_AUTH_URI=${HID_AUTH_URI}
