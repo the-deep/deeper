@@ -1,21 +1,23 @@
-sudo: required
-
 language: generic
+dist: xenial
+os: linux
 
 services:
     - docker
 
 before_install:
     - sudo apt-get install jq
+    - curl -L https://github.com/mikefarah/yq/releases/download/3.3.2/yq_linux_amd64 > yq && chmod +x yq && sudo cp yq /usr/bin/
     - sudo apt-get remove python3-pip
     - sudo apt-get install python3-pip python3-setuptools python3-wheel
     - sudo pip3 install -U setuptools
-    - sudo pip3 install --upgrade awscli
-    - sudo pip3 install --upgrade awsebcli
+    - pip3 install --user --upgrade awscli
+    - pip3 install --user --upgrade awsebcli
     - eb --version
 
-    - env > .env
+    - touch .env
     - rm docker-compose.yml
+    - mv docker-travis.yml docker-compose.yml
     - ./deploy/scripts/travis_decrypt.sh
 
 before_script:

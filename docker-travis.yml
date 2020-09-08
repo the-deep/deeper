@@ -2,22 +2,24 @@ version: '3.2'
 
 services:
     db:
-        image: thedeep/deep-postgres:latest
+      image: thedeep/deep-postgres:latest
+      environment:
+        POSTGRES_PASSWORD: postgres
 
     redis:
-        image: redis:latest
+      image: redis:latest
 
     server:
-        image: thedeep/deep-server:latest
-        build:
-          context: ./server/
-          cache_from:
-            - thedeep/deep-server:latest
-        env_file:
-            - .env
-        command: bash -c '/code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_develop.sh'
-        ports:
-            - '8000:8000'
-        depends_on:
-            - db
-            - redis
+      image: thedeep/deep-server:latest
+      build:
+        context: ./server/
+        cache_from:
+          - thedeep/deep-server:latest
+      env_file:
+          - .env
+      command: bash -c '/code/scripts/wait-for-it.sh db:5432 && /code/scripts/run_develop.sh'
+      ports:
+          - '8000:8000'
+      depends_on:
+          - db
+          - redis
