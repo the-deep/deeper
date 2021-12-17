@@ -1,12 +1,11 @@
 # Deeper repos
-client
-server
 browser-extension
 
 media/
 postgres-data/
 redis-data/
 
+secrets.yml
 production.env
 
 # Swap files
@@ -141,6 +140,8 @@ typings/
 
 # dotenv environment variables file
 .env*
+server.env
+client.env
 !.env-sample
 !.env-dev.enc
 !.env-prod.enc
@@ -149,3 +150,7 @@ typings/
 # Sensitive Deploy Files
 deploy/eb/
 deploy/nginx/config/
+
+# Ref repo
+client/
+server/

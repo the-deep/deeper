@@ -1,0 +1,232 @@
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+  DBName:
+    Type: String
+    Description: The name of the initial database to be created in the DB cluster/instance.
+    Default: deep
+    # Cannot have special characters
+    # Naming constraints: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.Constraints
+
+Conditions:
+  ISProduction:
+    !Equals [!Ref Env, prod]
+  ISNotProduction:
+    !Not [Condition: ISProduction]
+
+Mappings:
+  DatabaseConfigurationMap:
+    # prod:
+    #   DBFamily: 'aurora-postgresql13'
+    #   DBInstanceClass: db.t2.medium
+    #   Engine: aurora-postgresql
+    #   EngineVersion: '13.4'
+    #   BackupRetentionPeriod: 7
+    alpha:
+      DBFamily: 'postgres13'
+      DBInstanceClass: db.t3.small
+      Engine: postgres
+      EngineVersion: '13.4'
+      BackupRetentionPeriod: 7
+
+Resources:
+  # KMS Key
+  DbKmsKey:
+    Type: 'AWS::KMS::Key'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Properties:
+      KeyPolicy:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              AWS: !Sub 'arn:aws:iam::${AWS::AccountId}:root'
+            Action: 'kms:*'
+            Resource: '*'
+          - Effect: Allow
+            Principal:
+              AWS: '*'
+            Action:
+              - 'kms:Encrypt'
+              - 'kms:Decrypt'
+              - 'kms:ReEncrypt*'
+              - 'kms:GenerateDataKey*'
+              - 'kms:CreateGrant'
+              - 'kms:ListGrants'
+              - 'kms:DescribeKey'
+            Resource: '*'
+            Condition:
+              StringEquals:
+                'kms:CallerAccount': !Ref 'AWS::AccountId'
+                'kms:ViaService': !Sub 'rds.${AWS::Region}.amazonaws.com'
+
+  # AuroraKMSCMKAlias:
+  #   Type: 'AWS::KMS::Alias'
+  #   DeletionPolicy: Retain
+  #   Condition: ISProduction
+  #   DependsOn: ['DatabaseDBCluster']
+  #   Properties:
+  #     AliasName: !Sub 'alias/copilot-${App}-${Env}-${Name}-${DatabaseDBCluster}'
+  #     TargetKeyId: !Ref DbKmsKey
+
+  RdsKMSCMKAlias:
+    Type: 'AWS::KMS::Alias'
+    DeletionPolicy: Retain
+    UpdateReplacePolicy: Retain
+    Condition: ISNotProduction
+    DependsOn: ['RDSInstance']
+    Properties:
+      AliasName: !Sub 'alias/${AWS::StackName}-${RDSInstance}'
+      TargetKeyId: !Ref DbKmsKey
+  # --
+
+  DatabaseDBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Group of Copilot private subnets for DB cluster/instance.
+      SubnetIds:
+        !Split [',', { 'Fn::ImportValue': !Sub '${App}-${Env}-PrivateSubnets' }]
+
+  DatabaseSecurityGroup:
+    Metadata:
+      'aws:copilot:description': 'A security group for your workload to access the DB cluster/instance database'
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: !Sub 'The Security Group for ${Name} to access DB cluster/instance database.'
+      SecurityGroupIngress:
+        - ToPort: 5432
+          FromPort: 5432
+          IpProtocol: tcp
+          Description: !Sub 'From the DB Security Group of the workload ${Name}.'
+          SourceSecurityGroupId: { 'Fn::ImportValue': !Sub '${App}-${Env}-EnvironmentSecurityGroup' }
+      VpcId:
+        Fn::ImportValue:
+          !Sub '${App}-${Env}-VpcId'
+      Tags:
+        - Key: Name
+          Value: !Sub 'copilot-${App}-${Env}-${Name}-database'
+
+  DatabaseSecret:
+    Metadata:
+      'aws:copilot:description': 'A Secrets Manager secret to store your DB credentials'
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${AWS::StackName}-DatabaseSecret'
+      Description: !Sub Database main user secret for ${AWS::StackName}
+      GenerateSecretString:
+        SecretStringTemplate: '{"username": "postgres"}'
+        GenerateStringKey: "password"
+        ExcludePunctuation: true
+        IncludeSpace: false
+        PasswordLength: 16
+
+  # NOTE: this ssm bears the ARN for db secret, for worker service
+  DatabaseSecretParam:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub /copilot/${App}/${Env}/secrets/DEEP_DATABASE_SECRET_ARN
+      Type: String
+      Value: !Ref DatabaseSecret
+
+  # DatabaseDBClusterParameterGroup:
+  #   Metadata:
+  #     'aws:copilot:description': 'A DB parameter group for engine configuration values'
+  #   Type: 'AWS::RDS::DBClusterParameterGroup'
+  #   Properties:
+  #     Description: !Ref 'AWS::StackName'
+  #     Family: 'aurora-postgresql10'
+  #     Parameters:
+  #       client_encoding: 'UTF8'
+  #       rds.force_ssl: 1
+
+  # DatabaseDBCluster:
+  #   Metadata:
+  #     'aws:copilot:description': 'The database Aurora Serverless database cluster'
+  #   Type: 'AWS::RDS::DBCluster'
+  #   DeletionPolicy: Retain
+  #   Properties:
+  #   Properties:
+  #     Engine: !FindInMap [DatabaseConfigurationMap, !Ref Env, Engine]
+  #     EngineVersion: !FindInMap [DatabaseConfigurationMap, !Ref Env, EngineVersion]
+  #     BackupRetentionPeriod: !FindInMap [DatabaseConfigurationMap, !Ref Env, BackupRetentionPeriod]
+  #     MasterUsername:
+  #       !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:username}}" ]]
+  #     MasterUserPassword:
+  #       !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:password}}" ]]
+  #     DatabaseName: !Ref DBName
+  #     DBClusterParameterGroupName: !Ref DatabaseDBClusterParameterGroup
+  #     DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
+  #     StorageEncrypted: True
+  #     KmsKeyId: !Ref DbKmsKey
+  #     VpcSecurityGroupIds:
+  #       - !Ref DatabaseSecurityGroup
+
+  # DatabaseSecretAuroraClusterAttachment:
+  #   Type: AWS::SecretsManager::SecretTargetAttachment
+  #   Properties:
+  #     SecretId: !Ref DatabaseSecret
+  #     TargetId: !Ref DatabaseDBCluster
+  #     TargetType: AWS::RDS::DBCluster
+
+  # For alpha ------------------------------------------------------------------------------------------------------------------
+  DBParameterGroup:
+    Type: 'AWS::RDS::DBParameterGroup'
+    Condition: ISNotProduction
+    Properties:
+      Description: !Ref 'AWS::StackName'
+      Family: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBFamily]
+      Parameters:
+        client_encoding: 'UTF8'
+        rds.force_ssl: 1
+
+  RDSInstance:
+    Type: "AWS::RDS::DBInstance"
+    Condition: ISNotProduction
+    DeletionPolicy: Snapshot
+    Properties:
+      DBInstanceIdentifier: !Sub '${App}-${Env}-db'
+      MasterUsername:
+        !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:username}}" ]]
+      MasterUserPassword:
+        !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:password}}" ]]
+      DBName: !Ref DBName
+      StorageEncrypted: True
+      KmsKeyId: !Ref DbKmsKey
+      AutoMinorVersionUpgrade: True
+      StorageType: "gp2"
+      AllocatedStorage: "20"
+      MaxAllocatedStorage: 50
+      DBInstanceClass: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBInstanceClass]
+      Engine: !FindInMap [DatabaseConfigurationMap, !Ref Env, Engine]
+      EngineVersion: !FindInMap [DatabaseConfigurationMap, !Ref Env, EngineVersion]
+      BackupRetentionPeriod: !FindInMap [DatabaseConfigurationMap, !Ref Env, BackupRetentionPeriod]
+      DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
+      DBParameterGroupName: !Ref DBParameterGroup
+      PubliclyAccessible: false
+      VPCSecurityGroups:
+        - !Ref DatabaseSecurityGroup
+
+  RdsDatabaseSecretAttachment:
+    Type: AWS::SecretsManager::SecretTargetAttachment
+    Condition: ISNotProduction
+    Properties:
+      SecretId: !Ref DatabaseSecret
+      TargetId: !Ref RDSInstance
+      TargetType: AWS::RDS::DBInstance
+
+
+Outputs:
+  DeepDatabaseSecret: # injected as DEEP_DATABASE_SECRET environment variable by Copilot.
+    Description: "The JSON secret that holds the database username and password. Fields are 'host', 'port', 'dbname', 'username', 'password', 'dbClusterIdentifier' and 'engine'"
+    Value: !Ref DatabaseSecret
+  DatabaseSecurityGroup:
+    Description: "The security group to attach to the workload."
+    Value: !Ref DatabaseSecurityGroup

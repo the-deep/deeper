@@ -1,0 +1,96 @@
+# Ref: https://github.com/aws-samples/startup-kit-templates/blob/master/templates/elasticache.cfn.yml
+AWSTemplateFormatVersion: 2010-09-09
+
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+
+Mappings:
+  ElasticCacheConfigurationMap:
+    # prod:
+    #   CacheNodeType: cache.t2.micro
+    #   NumCacheNodes: 3
+    alpha:
+      CacheNodeType: cache.t2.micro
+      NumCacheNodes: 1
+
+
+Resources:
+  SubnetGroup:
+    Type: AWS::ElastiCache::SubnetGroup
+    Properties:
+      Description: Cache Subnet Group
+      SubnetIds:
+        !Split [',', { 'Fn::ImportValue': !Sub '${App}-${Env}-PrivateSubnets' }]
+
+  ElasticCacheSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: ElastiCache Security Group
+      VpcId:
+        Fn::ImportValue:
+          !Sub '${App}-${Env}-VpcId'
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 6379
+          ToPort: 6379
+          Description: !Sub 'From the ElastiCache Security Group of the workload ${Name}.'
+          SourceSecurityGroupId: { 'Fn::ImportValue': !Sub '${App}-${Env}-EnvironmentSecurityGroup' }
+      Tags:
+        - Key: 'copilot-application'
+          Value: !Sub '${App}'
+        - Key: 'copilot-environment'
+          Value: !Sub '${Env}'
+
+  ElastiCacheCluster:
+    Type: AWS::ElastiCache::CacheCluster
+    Properties:
+      AutoMinorVersionUpgrade: True
+      Engine: 'redis'
+      ClusterName : !Sub '${App}-${Env}-redis-elasticache'
+      CacheNodeType: !FindInMap [ElasticCacheConfigurationMap, !Ref Env, CacheNodeType]
+      NumCacheNodes: !FindInMap [ElasticCacheConfigurationMap, !Ref Env, NumCacheNodes]
+      CacheSubnetGroupName: !Ref SubnetGroup
+      VpcSecurityGroupIds:
+        - !Ref ElasticCacheSecurityGroup
+      Tags:
+        - Key: 'copilot-application'
+          Value: !Sub '${App}'
+        - Key: 'copilot-environment'
+          Value: !Sub '${Env}'
+
+Outputs:
+  ElastiCacheClusterArn:
+    Description: ElastiCache Cluster Arn
+    Value: !Sub arn:aws:elasticache:${AWS::Region}:${AWS::AccountId}:cluster/${ElastiCacheCluster}
+    Export:
+      Name: !Sub ${App}-${Env}-ElastiCacheClusterArn
+
+  ElastiCacheClusterId:
+    Description: ElastiCache Cluster ID
+    Value: !Ref ElastiCacheCluster
+    Export:
+      Name: !Sub ${App}-${Env}-ElastiCacheClusterID
+
+  ElastiCacheAddress: # env var ELASTI_CACHE_ADDRESS
+    Description: ElastiCache endpoint address
+    Value: !GetAtt ElastiCacheCluster.RedisEndpoint.Address
+    Export:
+      Name: !Sub ${App}-${Env}-ElastiCacheAddress
+
+  ElastiCachePort: # env var ELASTI_CACHE_PORT
+    Description: ElastiCache port
+    Value: 6379
+    Export:
+      Name: !Sub ${App}-${Env}-ElastiCachePort
+
+  ElasticCacheSecurityGroup:
+    Description: "The security group to attach to the workload."
+    Value: !Ref ElasticCacheSecurityGroup

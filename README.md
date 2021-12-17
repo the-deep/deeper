@@ -22,3 +22,24 @@ If you are interested in contributing, please checkout the information below and
 
 - [Development website](https://alpha.thedeep.io)
 - [API](https://api.alpha.thedeep.io)
+
+## Copilot Deployment
+
+### Init
+```
+copilot app init deep --domain thedeep.io
+copilot env init --name {stage} --profile {profile} --default-config
+copilot svc init --name web
+```
+
+### [Secrets](https://aws.github.io/copilot-cli/docs/commands/secret-init/)
+Load secrets (Sample: secrets-sample.yml)
+```
+copilot secret init --cli-input-yaml secrets.yml
+```
+
+### Deploy
+Load secrets (Sample: secrets-sample.yml)
+```
+copilot svc deploy --name web --env {stage}
+```

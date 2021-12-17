@@ -1,0 +1,71 @@
+name: web
+type: Load Balanced Web Service
+
+http:
+  path: '/'
+  healthcheck:
+    path: '/'
+    success_codes: '200'
+    interval: 30s
+    timeout: 15s
+    retries: 3
+    start_period: 30s
+
+
+# Configuration for your containers and service.
+image:
+  build:
+    context: ./server/
+    target: web
+  port: 80
+
+command: '/code/deploy/scripts/run_web.sh'
+
+# https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html
+cpu: 1024      # Number of CPU units for the task.
+memory: 2048   # Amount of memory in MiB used by the task.
+count: 1       # Number of tasks that should be running in your service.
+exec: true     # Enable running commands in your container.
+
+
+variables:
+  DJANGO_DEBUG: False
+  DEEPER_SITE_NAME: The DEEP
+  DEEP_HTTPS: https
+  DJANGO_USE_S3: true
+  USE_EMAIL_CONFIG: true
+  SERVICE_ENVIRONMENT_TYPE: web
+  USE_SES_EMAIL_CONFIG: true
+
+secrets:
+    DJANGO_SECRET_KEY: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DJANGO_SECRET_KEY
+    DJANGO_ALLOWED_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DJANGO_ALLOWED_HOST
+    HCAPTCHA_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/HCAPTCHA_SECRET
+    SENTRY_DSN: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/SENTRY_DSN
+    HID_CLIENT_ID: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/HID_CLIENT_ID
+    HID_CLIENT_REDIRECT_URL: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/HID_CLIENT_REDIRECT_URL
+    HID_AUTH_URI: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/HID_AUTH_URI
+    DEEP_FRONTEND_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DEEP_FRONTEND_HOST
+    DEEP_FRONTEND_ARY_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DEEP_FRONTEND_ARY_HOST
+    EMAIL_FROM: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/EMAIL_FROM
+    DJANGO_ADMINS: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DJANGO_ADMINS
+    CSRF_COOKIE_DOMAIN: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/CSRF_COOKIE_DOMAIN
+    SESSION_COOKIE_DOMAIN: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/SESSION_COOKIE_DOMAIN
+
+
+environments:
+  alpha:
+    http:
+      alias: alpha-api.thedeep.io
+
+    count:
+      spot: 1
+
+  # prod:
+  #   count:
+  #     range: 1-4
+  #     requests: 1000
+  #     spot_from: 2
+  # secrets:
+  #   S3_AWS_ACCESS_KEY_ID: /copilot/deep/prod/secrets/AWS_S3_ACCESS_KEY_ID
+  #   S3_AWS_SECRET_ACCESS_KEY: /copilot/deep/prod/secrets/AWS_S3_SECRET_ACCESS_KEY
