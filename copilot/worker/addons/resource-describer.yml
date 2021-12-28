@@ -1,0 +1,165 @@
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+
+Resources:
+  ResourceDescriberRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      Path: /
+      ManagedPolicyArns:
+      - !Sub arn:${AWS::Partition}:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+      Policies:
+      - PolicyName: "DescribeResources"
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Sid: ECS
+            Effect: Allow
+            Action:
+              - ecs:DescribeServices
+            Resource: "*"
+            Condition:
+              ArnEquals:
+                'ecs:cluster':
+                  Fn::Sub:
+                    - arn:${AWS::Partition}:ecs:${AWS::Region}:${AWS::AccountId}:cluster/${ClusterName}
+                    - ClusterName:
+                        Fn::ImportValue:
+                          !Sub '${App}-${Env}-ClusterId'
+          - Sid: ResourceGroups
+            Effect: Allow
+            Action:
+              - resource-groups:GetResources
+            Resource: "*"
+          - Sid: Tags
+            Effect: Allow
+            Action:
+              - "tag:GetResources"
+            Resource: "*"
+
+  ResourceDescriberFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      Code:
+        ZipFile: |
+            const AWS = require('aws-sdk');
+
+            let report = function (
+              event,
+              context,
+              responseStatus,
+              responseData,
+              reason,
+              physicalResourceId,
+            ) {
+              return new Promise((resolve, reject) => {
+                const https = require("https");
+                const { URL } = require("url");
+                let responseBody = JSON.stringify({
+                  Status: responseStatus,
+                  Reason: reason,
+                  PhysicalResourceId: physicalResourceId || context.logStreamName,
+                  StackId: event.StackId,
+                  RequestId: event.RequestId,
+                  LogicalResourceId: event.LogicalResourceId,
+                  Data: responseData,
+                });
+                const parsedUrl = new URL(event.ResponseURL);
+                const options = {
+                  hostname: parsedUrl.hostname,
+                  port: 443,
+                  path: parsedUrl.pathname + parsedUrl.search,
+                  method: "PUT",
+                  headers: {
+                    "Content-Type": "",
+                    "Content-Length": responseBody.length,
+                  },
+                };
+                console.log('ResponseBody:', responseBody);
+                https
+                  .request(options)
+                  .on("error", reject)
+                  .on("response", (res) => {
+                    res.resume();
+                    if (res.statusCode >= 400) {
+                      reject(new Error(`Error ${res.statusCode}: ${res.statusMessage}`));
+                    } else {
+                      resolve();
+                    }
+                  })
+                  .end(responseBody, "utf8");
+              });
+            };
+
+            exports.handler = async function(event, context) {
+                console.info('Event::', JSON.stringify(event, null, 2));
+                // For Delete requests, immediately send a SUCCESS response.
+                if (event.RequestType == "Delete") {
+                    await report(event, context, "SUCCESS");
+                    return;
+                }
+                // Query for the service name. (RequestType: Create, Delete)
+                try {
+                    const {
+                        cluster,
+                        appName,
+                        envName,
+                        workloadName,
+                    } = event.ResourceProperties;
+                    const rgt = new AWS.ResourceGroupsTaggingAPI();
+                    const resp = await rgt.getResources({
+                        ResourceTypeFilters: ["ecs:service"],
+                        TagFilters: [
+                            {Key: "copilot-application", Values: [appName]},
+                            {Key: "copilot-environment", Values: [envName]},
+                            {Key: "copilot-service", Values: [workloadName]},
+                        ],
+                    }).promise();
+                    const resources = resp.ResourceTagMappingList;
+                    if (resources.length !== 1) {
+                        throw new Error("unexpected resource length size:" + resources.length);
+                    }
+                    const ecs = new AWS.ECS();
+                    const services = await ecs.describeServices({ cluster: cluster, services: [resources[0].ResourceARN] }).promise();
+                    const { serviceName } = services.services[0];
+                    // Send success
+                    await report(event, context, "SUCCESS", {Cluster: cluster, ServiceName: serviceName});
+                } catch(err) {
+                    // Send error
+                    await report(event, context, "FAILED", null, `${err.message}`);
+                }
+            };
+      Handler: "index.handler"
+      Timeout: 600
+      MemorySize: 512
+      Role: !GetAtt ResourceDescriberRole.Arn
+      Runtime: nodejs12.x
+
+  ResourceDescriberAction:
+    Type: Custom::ResourceDescriberFunction
+    Properties:
+      ServiceToken: !GetAtt ResourceDescriberFunction.Arn
+      cluster:
+        Fn::ImportValue:
+          !Sub '${App}-${Env}-ClusterId'
+      appName: !Ref App
+      envName: !Ref Env
+      workloadName: !Ref Name

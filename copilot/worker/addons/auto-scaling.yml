@@ -1,0 +1,72 @@
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+
+Mappings:
+  ScalingCapacity:
+    # prod:
+    #   MinCapacity: 1
+    #   MaxCapacity: 5
+    alpha:
+      MinCapacity: 1
+      MaxCapacity: 3
+
+Resources:
+  AutoScalingRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
+
+  AutoScalingTarget:
+    Metadata:
+      'aws:copilot:description': "An autoscaling target to scale your service's desired count"
+    Type: AWS::ApplicationAutoScaling::ScalableTarget
+    Properties:
+      MinCapacity: !FindInMap [ScalingCapacity, !Ref Env, MinCapacity]
+      MaxCapacity: !FindInMap [ScalingCapacity, !Ref Env, MaxCapacity]
+      ResourceId:
+        Fn::Join:
+          - '/'
+          - - 'service'
+            - !GetAtt ResourceDescriberAction.Cluster  # From ./resource-describer.yml
+            - !GetAtt ResourceDescriberAction.ServiceName  # From ./resource-describer.yml
+      ScalableDimension: ecs:service:DesiredCount
+      ServiceNamespace: ecs
+      RoleARN: !GetAtt AutoScalingRole.Arn
+
+  ServiceScalingPolicyCeleryUsages:
+    Type: AWS::ApplicationAutoScaling::ScalingPolicy
+    Properties:
+      PolicyName: !Join ['-', [!Ref App, !Ref Env, ServiceScalingPolicyCeleryUsages]]
+      PolicyType: TargetTrackingScaling
+      ScalingTargetId: !Ref AutoScalingTarget
+      TargetTrackingScalingPolicyConfiguration:
+        ScaleInCooldown: 240
+        ScaleOutCooldown: 60
+        TargetValue: 500
+        CustomizedMetricSpecification:
+          # This is taken from server/deep/tasks.py::_get_celery_queue_length_metric
+          MetricName: "celery-queue-backlog-per-worker"
+          Namespace: "DEEP"
+          Statistic: 'Average'
+          Unit: Percent
+          Dimensions:
+            - Name: Environment
+              Value: !Ref Env
+            - Name: Queue
+              # This is taken from server/deep/celery.py::CeleryQueue:DEFAULT
+              Value: CELERY-DEFAULT-QUEUE

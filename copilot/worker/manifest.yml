@@ -1,0 +1,67 @@
+name: worker
+type: Backend Service
+
+# Configuration for your containers and service.
+image:
+  build:
+    context: ./server/
+    target: worker
+  healthcheck:
+    command: ["CMD-SHELL", "celery -A deep inspect ping -d celery@$HOSTNAME"]
+    interval: 30s
+    retries: 3
+    timeout: 5s
+    start_period: 30s
+
+command: '/code/deploy/scripts/run_worker.sh'
+
+# https://docs.aws.amazon.com/AmazonECS/latest/developerguide/task-cpu-memory-error.html
+cpu: 1024      # Number of CPU units for the task.
+memory: 2048   # Amount of memory in MiB used by the task.
+count: 1       # Number of tasks that should be running in your service.
+exec: true     # Enable running commands in your container.
+
+# https://github.com/aws/copilot-cli/blob/mainline/site/content/docs/developing/taskdef-overrides.en.md#examples
+# For worker instance, max time gap between SIGTERM and SIGKILL. Allowing celery to exit before killing.
+taskdef_overrides:
+  - path: ContainerDefinitions[0].StopTimeout
+    value: 120
+
+
+variables:
+  DJANGO_DEBUG: False
+  DEEPER_SITE_NAME: The DEEP
+  DEEP_HTTPS: https
+  DJANGO_USE_S3: true
+  USE_EMAIL_CONFIG: true
+  USE_SES_EMAIL_CONFIG: true
+  SERVICE_ENVIRONMENT_TYPE: worker
+  CELERY_QUEUE: CELERY-DEFAULT-QUEUE
+
+secrets:
+    # Same as web/manifest.yml::secrets
+    DJANGO_SECRET_KEY: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DJANGO_SECRET_KEY
+    DJANGO_ALLOWED_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DJANGO_ALLOWED_HOST
+    HCAPTCHA_SECRET: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/HCAPTCHA_SECRET
+    SENTRY_DSN: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/SENTRY_DSN
+    HID_CLIENT_ID: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/HID_CLIENT_ID
+    HID_CLIENT_REDIRECT_URL: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/HID_CLIENT_REDIRECT_URL
+    HID_AUTH_URI: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/HID_AUTH_URI
+    DEEP_FRONTEND_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DEEP_FRONTEND_HOST
+    DEEP_FRONTEND_ARY_HOST: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DEEP_FRONTEND_ARY_HOST
+    EMAIL_FROM: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/EMAIL_FROM
+    DJANGO_ADMINS: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/DJANGO_ADMINS
+    CSRF_COOKIE_DOMAIN: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/CSRF_COOKIE_DOMAIN
+    SESSION_COOKIE_DOMAIN: /copilot/${COPILOT_APPLICATION_NAME}/${COPILOT_ENVIRONMENT_NAME}/secrets/SESSION_COOKIE_DOMAIN
+
+
+environments:
+  alpha:
+    count:
+      spot: 1
+
+  # prod:
+  #   count:
+  #     range: 1-4
+  #     requests: 1000
+  #     spot_from: 2

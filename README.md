@@ -25,6 +25,14 @@ If you are interested in contributing, please checkout the information below and
 
 ## Copilot Deployment
 
+### Deploy custom CFN Macros (Used later for copilot addons)
+```
+aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ./aws/cfn-macros.yml --stack-name deep-custom-macros
+```
+### SES Setup
+
+For the email used for `EMAIL_FROM`, verify and add domain to SES.
+
 ### Init
 ```
 copilot app init deep --domain thedeep.io

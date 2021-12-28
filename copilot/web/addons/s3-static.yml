@@ -15,7 +15,12 @@ Resources:
       'aws:copilot:description': 'An Amazon S3 bucket to store and retrieve objects for static files.'
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: !Sub '${AWS::StackName}-static'
+      BucketName:
+        'Fn::Transform':
+           Name: 'String'
+           Parameters:
+             InputString: !Sub '${AWS::StackName}-static'
+             Operation: Lower
       AccessControl: PublicRead
       WebsiteConfiguration:
         IndexDocument: index.html
@@ -86,6 +91,9 @@ Outputs:
   AwsStorageBucketNameStatic:  # This will be injected as AWS_STORAGE_BUCKET_NAME_STATIC
     Description: "The name of a deep static bucket."
     Value: !Ref StaticBucket
+    Export:
+      Name: !Sub ${App}-${Env}-StaticBucket
+
   staticAccessPolicy:
     Description: "The IAM::ManagedPolicy to attach to the task role"
     Value: !Ref StaticAccessPolicy

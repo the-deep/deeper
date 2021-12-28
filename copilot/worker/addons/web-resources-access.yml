@@ -1,0 +1,122 @@
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+
+Resources:
+  # https://aws.github.io/copilot-cli/docs/developing/additional-aws-resources/
+  ResourceAccessPolicy:
+    Metadata:
+      'aws:copilot:description': 'This is for the worker service to access the addons created for django service'
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Description: 'Grants secret manager access; Grants CRUD access to S3 bucket'
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: DatabaseAccessActions
+            Effect: Allow
+            Action:
+              - secretsmanager:GetResourcePolicy
+              - secretsmanager:GetSecretValue
+              - secretsmanager:DescribeSecret
+              - secretsmanager:ListSecretVersionIds,
+              - secretsmanager:ListSecrets
+            Resource:
+              Fn::ImportValue: !Sub '${App}-${Env}-DatabaseSecret'
+          - Sid: S3ObjectActions
+            Effect: Allow
+            Action:
+              - s3:GetObject
+              - s3:PutObject
+              - s3:PutObjectACL
+              - s3:PutObjectTagging
+              - s3:DeleteObject
+              - s3:RestoreObject
+            Resource:
+              - Fn::Sub:
+                - arn:aws:s3:::${BucketArn}/*
+                - BucketArn:
+                    Fn::ImportValue:
+                      !Sub '${App}-${Env}-StaticBucket'
+              - Fn::Sub:
+                - arn:aws:s3:::${BucketArn}/*
+                - BucketArn:
+                    Fn::ImportValue:
+                      !Sub '${App}-${Env}-MediaBucket'
+          - Sid: S3ListAction
+            Effect: Allow
+            Action: s3:ListBucket
+            Resource:
+              - Fn::Sub:
+                - arn:aws:s3:::${BucketArn}
+                - BucketArn:
+                    Fn::ImportValue:
+                      !Sub '${App}-${Env}-StaticBucket'
+              - Fn::Sub:
+                - arn:aws:s3:::${BucketArn}
+                - BucketArn:
+                    Fn::ImportValue:
+                      !Sub '${App}-${Env}-MediaBucket'
+          - Sid: CloudWatchMetricUpdateAccess
+            Effect: Allow
+            Action:
+              - cloudwatch:PutMetricData
+              - cloudwatch:GetMetricStatistics
+              - cloudwatch:ListMetrics
+              - ec2:DescribeTags
+            Resource: '*'
+            Condition:
+              StringEquals:
+                cloudwatch:namespace: "DEEP"
+          - Sid: EmailSenderAction
+            Effect: Allow
+            Action:
+              - ses:GetSendQuota
+              - ses:SendEmail
+              - ses:SendRawEmail
+            # NOTE: Try specific
+            Resource: '*'
+
+Outputs:
+  # Access policy for resources.
+  WorkerIAMPolicy:
+    Description: "The ManagedPolicy to attach to the task role."
+    Value: !Ref ResourceAccessPolicy
+
+  # From web/addons/aurora-postgresql.yml (This will inject ARN instead of secrets directly)
+  DeepDatabaseSecret:
+    Value:
+      Fn::ImportValue:
+        !Sub ${App}-${Env}-DatabaseSecret
+
+  # From web/addons/s3-static.yml
+  AwsStorageBucketNameStatic:
+    Value:
+      Fn::ImportValue:
+        !Sub ${App}-${Env}-StaticBucket
+
+  # From web/addons/s3-media.yml
+  AwsStorageBucketNameMedia:
+    Value:
+      Fn::ImportValue:
+        !Sub ${App}-${Env}-MediaBucket
+
+  # From web/addons/redis-cache.yml
+  ElastiCacheAddress:
+    Description: ElastiCache endpoint address
+    Value:
+      Fn::ImportValue:
+        !Sub ${App}-${Env}-ElastiCacheAddress
+
+  ElastiCachePort:
+    Description: ElastiCache port
+    Value:
+      Fn::ImportValue:
+        !Sub ${App}-${Env}-ElastiCachePort

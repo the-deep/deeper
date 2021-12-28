@@ -16,7 +16,12 @@ Resources:
     Type: AWS::S3::Bucket
     DeletionPolicy: Retain
     Properties:
-      BucketName: !Sub '${AWS::StackName}-media'
+      BucketName:
+        'Fn::Transform':
+           Name: 'String'
+           Parameters:
+             InputString: !Sub '${AWS::StackName}-media'
+             Operation: Lower
       AccessControl: Private
       BucketEncryption:
         ServerSideEncryptionConfiguration:
@@ -78,6 +83,9 @@ Outputs:
   AwsStorageBucketNameMedia:  # This will be injected as AWS_STORAGE_BUCKET_NAME_MEDIA
     Description: "The name of a deep Media bucket."
     Value: !Ref MediaBucket
+    Export:
+      Name: !Sub ${App}-${Env}-MediaBucket
+
   mediaAccessPolicy:
     Description: "The IAM::ManagedPolicy to attach to the task role"
     Value: !Ref MediaAccessPolicy

@@ -12,12 +12,9 @@ Parameters:
 Resources:
   SesAccessPolicy:
     Metadata:
-      'aws:copilot:description': 'An IAM ManagedPolicy for your service to access the Media bucket'
+      'aws:copilot:description': 'An IAM ManagedPolicy for your service to access the SES'
     Type: AWS::IAM::ManagedPolicy
     Properties:
-      Description: !Sub
-        - Grants CRUD access to the S3 bucket ${Bucket}
-        - { Bucket: !Ref MediaBucket }
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -27,6 +24,7 @@ Resources:
               - ses:SendEmail
               - ses:SendRawEmai
             Effect: Allow
+            # NOTE: Try specific
             Resource: "*"
 
 

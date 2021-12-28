@@ -227,6 +227,9 @@ Outputs:
   DeepDatabaseSecret: # injected as DEEP_DATABASE_SECRET environment variable by Copilot.
     Description: "The JSON secret that holds the database username and password. Fields are 'host', 'port', 'dbname', 'username', 'password', 'dbClusterIdentifier' and 'engine'"
     Value: !Ref DatabaseSecret
+    Export:
+      Name: !Sub ${App}-${Env}-DatabaseSecret
+
   DatabaseSecurityGroup:
     Description: "The security group to attach to the workload."
     Value: !Ref DatabaseSecurityGroup
