@@ -38,6 +38,8 @@ For the email used for `EMAIL_FROM`, verify and add domain to SES.
 copilot app init deep --domain thedeep.io
 copilot env init --name {stage} --profile {profile} --default-config
 copilot svc init --name web
+copilot svc init --name worker
+copilot svc init --name export-worker
 ```
 
 ### [Secrets](https://aws.github.io/copilot-cli/docs/commands/secret-init/)
@@ -50,4 +52,10 @@ copilot secret init --cli-input-yaml secrets.yml
 Load secrets (Sample: secrets-sample.yml)
 ```
 copilot svc deploy --name web --env {stage}
+
+# Before deploying worker, export-worker, we need to manually change the template for now.
+# Make sure to not include auto-scaling addons and resource-describer on creation and then include on second deploy (i.e update)
+# https://github.com/aws/copilot-cli/issues/3149
+copilot svc deploy --name worker --env {stage}
+copilot svc deploy --name export-worker --env {stage}
 ```

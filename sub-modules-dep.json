@@ -1,0 +1,10 @@
+{
+    "client": {
+        "repo": "https://github.com/the-deep/client",
+        "branch": "develop-new"
+    },
+    "server": {
+        "repo": "https://github.com/the-deep/server",
+        "branch": "develop"
+    }
+}
