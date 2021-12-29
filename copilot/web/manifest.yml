@@ -15,7 +15,7 @@ http:
 # Configuration for your containers and service.
 image:
   build:
-    context: ./server/
+    dockerfile: ./server/Dockerfile
     target: web
   port: 80
 

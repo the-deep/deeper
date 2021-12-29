@@ -5,6 +5,6 @@
     },
     "server": {
         "repo": "https://github.com/the-deep/server",
-        "branch": "develop"
+        "branch": "feature/new-deployment-changes"
     }
 }

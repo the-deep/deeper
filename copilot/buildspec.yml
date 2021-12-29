@@ -9,13 +9,13 @@ phases:
       - echo "cd into $CODEBUILD_SRC_DIR"
       - cd $CODEBUILD_SRC_DIR
       # Download the copilot linux binary.
-      - wget https://ecs-cli-v2-release.s3.amazonaws.com/copilot-linux-v1.13.0
+      - wget -q https://ecs-cli-v2-release.s3.amazonaws.com/copilot-linux-v1.13.0
       - mv ./copilot-linux-v1.13.0 ./copilot-linux
       - chmod +x ./copilot-linux
 
   build:
     commands:
-      - echo "Cloning server"
+      - echo "Cloning server & client"
       - export SUB_MODULES_DEP_FILE=./sub-modules-dep.json
       - export DEEP_SERVER_REPO=`jq -r '.server.repo' ${SUB_MODULES_DEP_FILE}`
       - export DEEP_SERVER_BRANCH=`jq -r '.server.branch' ${SUB_MODULES_DEP_FILE}`
@@ -28,7 +28,7 @@ phases:
 
   post_build:
     commands:
-      - ls -l
+      - ls -l *
       - export COLOR="false"
       # First, upgrade the cloudformation stack of every environment in the pipeline.
       - pipeline=$(cat $CODEBUILD_SRC_DIR/copilot/pipeline.yml | ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))')
@@ -111,7 +111,7 @@ phases:
             dockerfile_args=$(echo $image | jq '.build?.args? // "" | to_entries?')
             build_cache_from=$(echo $image | jq -r '.build?.cache_from? // ""')
             df_rel_path=$( echo $base_dockerfile | sed 's/"//g')
-            if [ -n "$build_dockerfile" ]; then 
+            if [ -n "$build_dockerfile" ]; then
               df_rel_path=$build_dockerfile
             fi
             df_path=$df_rel_path
@@ -127,7 +127,7 @@ phases:
             fi
             build_args=
             if [ -n "$dockerfile_args" ]; then
-              for arg in $(echo $dockerfile_args | jq -r '.[] | "\(.key)=\(.value)"'); do 
+              for arg in $(echo $dockerfile_args | jq -r '.[] | "\(.key)=\(.value)"'); do
                 build_args="$build_args--build-arg $arg "
               done
             fi
