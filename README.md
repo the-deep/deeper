@@ -33,8 +33,15 @@ aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ./
 
 For the email used for `EMAIL_FROM`, verify and add domain to SES.
 
-### Init
+### Dockerhub authentication
+We need DOCKERHUB authentication to pull base images. To do that make sure ssm-paramter are created. Used in `copilot/buildspec.yml`
+```bash
+aws ssm put-parameter --name /copilot/global/DOCKERHUB_USERNAME --value <USERNAME> --type SecureString --overwrite
+aws ssm put-parameter --name /copilot/global/DOCKERHUB_TOKEN --value <TOKEN> --type SecureString --overwrite
 ```
+
+### Init
+```bash
 copilot app init deep --domain thedeep.io
 copilot env init --name {stage} --profile {profile} --default-config
 copilot svc init --name web
@@ -44,13 +51,13 @@ copilot svc init --name export-worker
 
 ### [Secrets](https://aws.github.io/copilot-cli/docs/commands/secret-init/)
 Load secrets (Sample: secrets-sample.yml)
-```
+```bash
 copilot secret init --cli-input-yaml secrets.yml
 ```
 
 ### Deploy
 Load secrets (Sample: secrets-sample.yml)
-```
+```bash
 copilot svc deploy --name web --env {stage}
 
 # Before deploying worker, export-worker, we need to manually change the template for now.
