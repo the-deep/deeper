@@ -36,7 +36,9 @@ variables:
   USE_EMAIL_CONFIG: true
   USE_SES_EMAIL_CONFIG: true
   SERVICE_ENVIRONMENT_TYPE: worker
+  # Celery configs (used by celery cmd)
   CELERY_QUEUE: CELERY-DEFAULT-QUEUE
+  CELERY_RUN_BEAT: true
 
 secrets:
     # Same as web/manifest.yml::secrets

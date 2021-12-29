@@ -36,7 +36,9 @@ variables:
   USE_EMAIL_CONFIG: true
   USE_SES_EMAIL_CONFIG: true
   SERVICE_ENVIRONMENT_TYPE: worker
+  # Celery configs (used by celery cmd)
   CELERY_QUEUE: CELERY-EXPORT-HEAVY-QUEUE
+  CELERY_MAX_TASKS_PER_CHILD: 5
 
 secrets:
     # Same as web/manifest.yml::secrets

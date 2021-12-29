@@ -11,12 +11,12 @@ x-server: &base_server_setup
   environment: &base_server_environment
     DJANGO_DEBUG: True
     DEEP_ENVIRONMENT: development
-    # FRONTEND_ARY_HOST: localhost:3001
     DEEP_FRONTEND_HOST: localhost:3000
     DEEP_FRONTEND_ARY_HOST: localhost:3001
     DJANGO_ALLOWED_HOST: localhost
     SESSION_COOKIE_DOMAIN: localhost
     CSRF_COOKIE_DOMAIN: localhost
+    EMAIL_FROM: dev@thedeep.io
     # From db.environment
     DATABASE_NAME: deep
     DATABASE_USER: postgres
@@ -26,6 +26,10 @@ x-server: &base_server_setup
     # From redis
     CELERY_REDIS_URL: redis://redis:6379/0
     DJANGO_CACHE_REDIS_URL: redis://redis:6379/2
+    # HID
+    HID_CLIENT_ID: deep-local
+    HID_CLIENT_REDIRECT_URL: http://localhost:3000/login/
+    HID_AUTH_URI: https://api2.dev.humanitarian.id
   env_file:
     - server.env
   volumes:
@@ -37,7 +41,6 @@ x-server: &base_server_setup
       condition: service_healthy
     redis:
       condition: service_healthy
-
 
 services:
   db:

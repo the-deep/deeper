@@ -90,8 +90,8 @@ Outputs:
     Description: "The ManagedPolicy to attach to the task role."
     Value: !Ref ResourceAccessPolicy
 
-  # From web/addons/aurora-postgresql.yml (This will inject ARN instead of secrets directly)
-  DeepDatabaseSecret:
+  # From web/addons/aurora-postgresql.yml (This will inject DEEP_DATABASE_SECRET_ARN)
+  DeepDatabaseSecretArn:
     Value:
       Fn::ImportValue:
         !Sub ${App}-${Env}-DatabaseSecret

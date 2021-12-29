@@ -2,6 +2,8 @@
 version: 0.2
 
 env:
+  variables:
+    region: us-east-1
   parameter-store:
     DOCKERHUB_USERNAME: /copilot/global/DOCKERHUB_USERNAME
     DOCKERHUB_TOKEN: /copilot/global/DOCKERHUB_TOKEN
@@ -9,9 +11,12 @@ env:
 phases:
   install:
     runtime-versions:
-      docker: 18
+      docker: 19
       ruby: 2.6
+
     commands:
+      # Enable docker buildkit
+      - export DOCKER_BUILDKIT=1
       - echo "cd into $CODEBUILD_SRC_DIR"
       - cd $CODEBUILD_SRC_DIR
       # Download the copilot linux binary.
@@ -28,10 +33,31 @@ phases:
       - export DEEP_SERVER_BRANCH=`jq -r '.server.branch' ${SUB_MODULES_DEP_FILE}`
       - export DEEP_CLIENT_REPO=`jq -r '.server.repo' ${SUB_MODULES_DEP_FILE}`
       - export DEEP_CLIENT_BRANCH=`jq -r '.server.branch' ${SUB_MODULES_DEP_FILE}`
-      - git clone --branch=${DEEP_SERVER_BRANCH} ${DEEP_SERVER_REPO} ./server
-      - git clone --branch=${DEEP_CLIENT_BRANCH} ${DEEP_CLIENT_REPO} ./client
-      - echo "Run your tests"
-      # - make test
+      - git clone --depth 1 --branch=${DEEP_SERVER_BRANCH} ${DEEP_SERVER_REPO} ./server
+      - git clone --depth 1 --branch=${DEEP_CLIENT_BRANCH} ${DEEP_CLIENT_REPO} ./client
+      - echo "[Server] Building server worker image"
+      - aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com
+      - export DOCKER_IMAGE_SERVER=$AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com/deep/worker:builder
+      - docker pull $DOCKER_IMAGE_SERVER || true
+      - docker build -t $DOCKER_IMAGE_SERVER --cache-from $DOCKER_IMAGE_SERVER ./server
+      - echo "[Server] Running tests"
+      - |
+          docker-compose -f ./server/gh-docker-compose.yml run --rm server wait-for-it db:5432 &&
+          docker-compose -f ./server/gh-docker-compose.yml run --rm server ./manage.py graphql_schema --out /ci-share/schema-latest.graphql &&
+          cmp --silent ./server/schema.graphql ./server/ci-share/schema-latest.graphql || {
+            echo 'The schema.graphql is not up to date with the latest changes. Please update and push latest';
+            diff ./server/schema.graphql ./server/ci-share/schema-latest.graphql;
+            exit 1;
+          }
+      - |
+          docker-compose -f ./server/gh-docker-compose.yml run --rm server python3 manage.py makemigrations --check --dry-run || {
+            echo 'There are some changes to be reflected in the migration. Make sure to run makemigrations';
+            exit 1;
+          }
+      - docker-compose -f ./server/gh-docker-compose.yml run --rm server /code/scripts/run_tests.sh
+      - echo "[Server] Pushing builder image"
+      - aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com
+      - docker push $DOCKER_IMAGE_SERVER
 
   post_build:
     commands:
@@ -154,7 +180,7 @@ phases:
             echo "Docker build context: $df_dir_path"
             echo "Docker build args: $build_args"
             echo "Running command: docker build -t $workload:$tag $build_args-f $df_path $df_dir_path";
-            docker build -t $workload:$tag $build_args-f $df_path $df_dir_path;
+            docker build --cache-from $DOCKER_IMAGE_SERVER -t $workload:$tag $build_args-f $df_path $df_dir_path;
             image_id=$(docker images -q $workload:$tag);
             repo=$(cat $CODEBUILD_SRC_DIR/infrastructure/$workload-$env.params.json | jq -r '.Parameters.ContainerImage');
             region=$(echo $repo | cut -d'.' -f4);
@@ -163,6 +189,7 @@ phases:
             docker push $repo;
           done;
         done;
+
 artifacts:
   files:
     - "infrastructure/*"
