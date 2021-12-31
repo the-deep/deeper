@@ -27,5 +27,10 @@ stages:
       requires_approval: true
       # Optional: flag for manual approval action before deployment.
       # Optional: use test commands to validate this stage of your build.
-      # test_commands: [echo 'running tests', make test]
-
+      test_commands:
+        # Use this to run migration until we can do post deployment hooks from copilot
+        # https://github.com/aws/copilot-cli/issues/3007
+        - echo 'Running collectstatic'
+        - python3 manage.py collectstatic --no-input
+        - echo 'Running migrations'
+        - python3 manage.py migrate --no-input

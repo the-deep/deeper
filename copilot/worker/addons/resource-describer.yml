@@ -9,6 +9,13 @@ Parameters:
     Type: String
     Description: The name of the service, job, or workflow being deployed.
 
+Conditions:
+  # XXX: Until we have better way, manually deploying by settings false and then true on pipeline
+  # https://github.com/aws/copilot-cli/issues/3149
+  StackServiceResourceExists: !Equals
+    - true  # false on Initial deploy
+    - true
+
 Resources:
   ResourceDescriberRole:
     Type: AWS::IAM::Role
@@ -155,6 +162,7 @@ Resources:
 
   ResourceDescriberAction:
     Type: Custom::ResourceDescriberFunction
+    Condition: StackServiceResourceExists
     Properties:
       ServiceToken: !GetAtt ResourceDescriberFunction.Arn
       cluster:

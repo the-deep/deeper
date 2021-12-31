@@ -18,6 +18,7 @@ Mappings:
       MinCapacity: 1
       MaxCapacity: 3
 
+
 Resources:
   AutoScalingRole:
     Type: AWS::IAM::Role
@@ -32,6 +33,7 @@ Resources:
         - !Sub 'arn:${AWS::Partition}:iam::aws:policy/service-role/AmazonEC2ContainerServiceAutoscaleRole'
 
   AutoScalingTarget:
+    Condition: StackServiceResourceExists
     Metadata:
       'aws:copilot:description': "An autoscaling target to scale your service's desired count"
     Type: AWS::ApplicationAutoScaling::ScalableTarget
@@ -49,6 +51,7 @@ Resources:
       RoleARN: !GetAtt AutoScalingRole.Arn
 
   ServiceScalingPolicyCeleryUsages:
+    Condition: StackServiceResourceExists
     Type: AWS::ApplicationAutoScaling::ScalingPolicy
     Properties:
       PolicyName: !Join ['-', [!Ref App, !Ref Env, ServiceScalingPolicyCeleryUsages]]
