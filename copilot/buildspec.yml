@@ -31,10 +31,10 @@ phases:
       - export SUB_MODULES_DEP_FILE=./sub-modules-dep.json
       - export DEEP_SERVER_REPO=`jq -r '.server.repo' ${SUB_MODULES_DEP_FILE}`
       - export DEEP_SERVER_BRANCH=`jq -r '.server.branch' ${SUB_MODULES_DEP_FILE}`
-      - export DEEP_CLIENT_REPO=`jq -r '.server.repo' ${SUB_MODULES_DEP_FILE}`
-      - export DEEP_CLIENT_BRANCH=`jq -r '.server.branch' ${SUB_MODULES_DEP_FILE}`
+      # - export DEEP_CLIENT_REPO=`jq -r '.server.repo' ${SUB_MODULES_DEP_FILE}`
+      # - export DEEP_CLIENT_BRANCH=`jq -r '.server.branch' ${SUB_MODULES_DEP_FILE}`
       - git clone --depth 1 --branch=${DEEP_SERVER_BRANCH} ${DEEP_SERVER_REPO} ./server
-      - git clone --depth 1 --branch=${DEEP_CLIENT_BRANCH} ${DEEP_CLIENT_REPO} ./client
+      # - git clone --depth 1 --branch=${DEEP_CLIENT_BRANCH} ${DEEP_CLIENT_REPO} ./client
       - echo "[Server] Building server worker image"
       - aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com
       - export DOCKER_IMAGE_SERVER=$AWS_ACCOUNT_ID.dkr.ecr.$region.amazonaws.com/deep/worker:builder
