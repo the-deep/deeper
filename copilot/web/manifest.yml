@@ -54,10 +54,9 @@ secrets:
 
 
 environments:
-  alpha:
+  staging:
     http:
-      alias: alpha-api.thedeep.io
-
+      alias: staging-api.thedeep.io
     count:
       spot: 1
 

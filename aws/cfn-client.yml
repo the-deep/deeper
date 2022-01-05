@@ -1,0 +1,150 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: Creates an S3 bucket, Cloudfront to host Deep frontend
+
+Parameters:
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+    AllowedPattern: (staging|prod)
+  HostedZoneId:
+    Description: 'The Route 53 hosted zone ID to create the domain in (e.g. Z2FDTNDATAQYW2).'
+    Type: String
+
+Mappings:
+  EnvMaps:
+    staging:
+      Domain: staging.thedeep.io
+      BucketName: deep-staging-client
+      UpdatePolicyName: deep-staging-client-update-policy
+      UpdateIamUserName: deep-staging-client-update-user
+    prod:
+      Domain: app.thedeep.io
+      BucketName: deep-prod-client
+      UpdatePolicyName: deep-prod-client-update-policy
+      UpdateIamUserName: deep-prod-client-update-user
+
+Resources:
+  WebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !FindInMap [EnvMaps, !Ref Env, BucketName]
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+  WebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref 'WebsiteBucket'
+      PolicyDocument:
+        Statement:
+        - Sid: PublicReadForGetBucketObjects
+          Effect: Allow
+          Principal: '*'
+          Action: s3:GetObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'WebsiteBucket', /*]]
+
+  AcmCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !FindInMap [EnvMaps, !Ref Env, Domain]
+      DomainValidationOptions:
+        - DomainName: !FindInMap [EnvMaps, !Ref Env, Domain]
+          HostedZoneId: !Ref 'HostedZoneId'
+      ValidationMethod: DNS
+
+  WebsiteCloudfront:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+    - WebsiteBucket
+    Properties:
+      DistributionConfig:
+        Comment: Cloudfront Distribution pointing to S3 bucket
+        Origins:
+        - DomainName: !Select [2, !Split ["/", !GetAtt WebsiteBucket.WebsiteURL]]
+          Id: S3Origin
+          CustomOriginConfig:
+            HTTPPort: '80'
+            HTTPSPort: '443'
+            OriginProtocolPolicy: http-only
+        Enabled: true
+        HttpVersion: 'http2'
+        DefaultRootObject: index.html
+        Aliases:
+        - !FindInMap [EnvMaps, !Ref Env, Domain]
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - GET
+          - HEAD
+          Compress: true
+          TargetOriginId: S3Origin
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref AcmCertificate
+          SslSupportMethod: sni-only
+
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref 'HostedZoneId'
+      Comment: CNAME redirect custom name to CloudFront distribution
+      Name: !FindInMap [EnvMaps, !Ref Env, Domain]
+      Type: CNAME
+      TTL: '900'
+      ResourceRecords:
+      - !GetAtt [WebsiteCloudfront, DomainName]
+
+  ClientUpdateIamPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !FindInMap [EnvMaps, !Ref Env, UpdatePolicyName]
+      Description: Policy for to update static files and invalidate CloudFront cache
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - cloudfront:CreateInvalidation
+            Effect: Allow
+            Resource:
+              - !Join ['', [!Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/', !Ref 'WebsiteCloudfront']]
+          - Action:
+              - s3:DeleteObject
+              - s3:GetBucketLocation
+              - s3:GetObject
+              - s3:ListBucket
+              - s3:PutObject
+              - s3:PutObjectAcl
+            Effect: Allow
+            Resource:
+              - !Join ['', ['arn:aws:s3:::', !Ref 'WebsiteBucket']]
+              - !Join ['', ['arn:aws:s3:::', !Ref 'WebsiteBucket', /*]]
+
+  ClientUpdateIamUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !FindInMap [EnvMaps, !Ref Env, UpdateIamUserName]
+      ManagedPolicyArns:
+        - !Ref ClientUpdateIamPolicy
+
+Outputs:
+  BucketName:
+    Value: !Ref 'WebsiteBucket'
+    Description: Name of S3 bucket to hold website content
+  CloudfrontEndpoint:
+    Value: !GetAtt [WebsiteCloudfront, DomainName]
+    Description: Endpoint for Cloudfront distribution
+  CloudfrontDistributionId:
+    Value: !Ref 'WebsiteCloudfront'
+    Description: ID for Cloudfront distribution
+  DNSRecord:
+    Value: !Ref DNSRecord
+    Description: Custom DNS Record
+  UpdatePolicyName:
+    Description: Policy to be used to update client files
+    Value: !FindInMap [EnvMaps, !Ref Env, UpdatePolicyName]

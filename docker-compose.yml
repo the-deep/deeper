@@ -33,7 +33,6 @@ x-server: &base_server_setup
   env_file:
     - server.env
   volumes:
-    - ./.git/modules/server/:/.git/modules/server/:ro
     - ./server/:/code
     - media:/media
   depends_on:
@@ -112,7 +111,6 @@ services:
       - client.env
     command: bash -c '/code/scripts/run_develop.sh'
     volumes:
-      - ./.git/modules/client/:/.git/modules/client/:ro
       - ./client/:/code
     ports:
       - '3000:3000'

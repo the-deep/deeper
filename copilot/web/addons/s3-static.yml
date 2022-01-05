@@ -10,7 +10,7 @@ Parameters:
     Description: The name of the service, job, or workflow being deployed.
 
 Resources:
-  StaticBucket:
+  S3StaticBucket:
     Metadata:
       'aws:copilot:description': 'An Amazon S3 bucket to store and retrieve objects for static files.'
     Type: AWS::S3::Bucket
@@ -36,7 +36,7 @@ Resources:
               - '*'
             MaxAge: 3600
 
-  StaticBucketPolicy:
+  S3StaticBucketPolicy:
     Type: AWS::S3::BucketPolicy
     Properties:
       PolicyDocument:
@@ -47,28 +47,28 @@ Resources:
             Principal: '*'
             Action: 's3:GetObject'
             Resource:
-              - !Sub ${ StaticBucket.Arn}/*
-              - !Sub ${ StaticBucket.Arn}
+              - !Sub ${ S3StaticBucket.Arn}/*
+              - !Sub ${ S3StaticBucket.Arn}
           - Sid: ForceHTTPS
             Effect: Deny
             Principal: '*'
             Action: 's3:*'
             Resource:
-              - !Sub ${ StaticBucket.Arn}/*
-              - !Sub ${ StaticBucket.Arn}
+              - !Sub ${ S3StaticBucket.Arn}/*
+              - !Sub ${ S3StaticBucket.Arn}
             Condition:
               Bool:
                 "aws:SecureTransport": false
-      Bucket: !Ref StaticBucket
+      Bucket: !Ref S3StaticBucket
 
-  StaticAccessPolicy:
+  S3StaticAccessPolicy:
     Metadata:
       'aws:copilot:description': 'An IAM ManagedPolicy for your service to access the static bucket'
     Type: AWS::IAM::ManagedPolicy
     Properties:
       Description: !Sub
         - Grants CRUD access to the S3 bucket ${Bucket}
-        - { Bucket: !Ref StaticBucket }
+        - { Bucket: !Ref S3StaticBucket }
       PolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -81,19 +81,21 @@ Resources:
               - s3:PutObjectTagging
               - s3:DeleteObject
               - s3:RestoreObject
-            Resource: !Sub ${ StaticBucket.Arn}/*
+            Resource: !Sub ${ S3StaticBucket.Arn}/*
           - Sid: S3ListAction
             Effect: Allow
             Action: s3:ListBucket
-            Resource: !Sub ${ StaticBucket.Arn}
+            Resource: !Sub ${ S3StaticBucket.Arn}
 
 Outputs:
   AwsStorageBucketNameStatic:  # This will be injected as AWS_STORAGE_BUCKET_NAME_STATIC
     Description: "The name of a deep static bucket."
-    Value: !Ref StaticBucket
+    Value: !Ref S3StaticBucket
     Export:
       Name: !Sub ${App}-${Env}-StaticBucket
 
-  staticAccessPolicy:
+  S3StaticAccessPolicy:
     Description: "The IAM::ManagedPolicy to attach to the task role"
-    Value: !Ref StaticAccessPolicy
+    Value: !Ref S3StaticAccessPolicy
+    Export:
+      Name: !Sub ${App}-${Env}-S3StaticAccessPolicy

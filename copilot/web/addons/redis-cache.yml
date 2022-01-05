@@ -17,7 +17,7 @@ Mappings:
     # prod:
     #   CacheNodeType: cache.t2.micro
     #   NumCacheNodes: 3
-    alpha:
+    staging:
       CacheNodeType: cache.t2.micro
       NumCacheNodes: 1
 

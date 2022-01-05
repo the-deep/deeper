@@ -23,13 +23,13 @@ Conditions:
 
 Mappings:
   DatabaseConfigurationMap:
-    # prod:
-    #   DBFamily: 'aurora-postgresql13'
-    #   DBInstanceClass: db.t2.medium
-    #   Engine: aurora-postgresql
-    #   EngineVersion: '13.4'
-    #   BackupRetentionPeriod: 7
-    alpha:
+    prod:
+      DBFamily: 'aurora-postgresql13'
+      DBInstanceClass: db.t2.medium
+      Engine: aurora-postgresql
+      EngineVersion: '13.4'
+      BackupRetentionPeriod: 7
+    staging:
       DBFamily: 'postgres13'
       DBInstanceClass: db.t3.small
       Engine: postgres
@@ -68,14 +68,14 @@ Resources:
                 'kms:CallerAccount': !Ref 'AWS::AccountId'
                 'kms:ViaService': !Sub 'rds.${AWS::Region}.amazonaws.com'
 
-  # AuroraKMSCMKAlias:
-  #   Type: 'AWS::KMS::Alias'
-  #   DeletionPolicy: Retain
-  #   Condition: ISProduction
-  #   DependsOn: ['DatabaseDBCluster']
-  #   Properties:
-  #     AliasName: !Sub 'alias/copilot-${App}-${Env}-${Name}-${DatabaseDBCluster}'
-  #     TargetKeyId: !Ref DbKmsKey
+  AuroraKMSCMKAlias:
+    Type: 'AWS::KMS::Alias'
+    DeletionPolicy: Retain
+    Condition: ISProduction
+    DependsOn: ['DatabaseDBCluster']
+    Properties:
+      AliasName: !Sub 'alias/copilot-${App}-${Env}-${Name}-${DatabaseDBCluster}'
+      TargetKeyId: !Ref DbKmsKey
 
   RdsKMSCMKAlias:
     Type: 'AWS::KMS::Alias'
@@ -136,47 +136,49 @@ Resources:
       Type: String
       Value: !Ref DatabaseSecret
 
-  # DatabaseDBClusterParameterGroup:
-  #   Metadata:
-  #     'aws:copilot:description': 'A DB parameter group for engine configuration values'
-  #   Type: 'AWS::RDS::DBClusterParameterGroup'
-  #   Properties:
-  #     Description: !Ref 'AWS::StackName'
-  #     Family: 'aurora-postgresql10'
-  #     Parameters:
-  #       client_encoding: 'UTF8'
-  #       rds.force_ssl: 1
+  DatabaseDBClusterParameterGroup:
+    Metadata:
+      'aws:copilot:description': 'A DB parameter group for engine configuration values'
+    Type: 'AWS::RDS::DBClusterParameterGroup'
+    Condition: ISProduction
+    Properties:
+      Description: !Ref 'AWS::StackName'
+      Family: 'aurora-postgresql10'
+      Parameters:
+        client_encoding: 'UTF8'
+        rds.force_ssl: 1
 
-  # DatabaseDBCluster:
-  #   Metadata:
-  #     'aws:copilot:description': 'The database Aurora Serverless database cluster'
-  #   Type: 'AWS::RDS::DBCluster'
-  #   DeletionPolicy: Retain
-  #   Properties:
-  #   Properties:
-  #     Engine: !FindInMap [DatabaseConfigurationMap, !Ref Env, Engine]
-  #     EngineVersion: !FindInMap [DatabaseConfigurationMap, !Ref Env, EngineVersion]
-  #     BackupRetentionPeriod: !FindInMap [DatabaseConfigurationMap, !Ref Env, BackupRetentionPeriod]
-  #     MasterUsername:
-  #       !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:username}}" ]]
-  #     MasterUserPassword:
-  #       !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:password}}" ]]
-  #     DatabaseName: !Ref DBName
-  #     DBClusterParameterGroupName: !Ref DatabaseDBClusterParameterGroup
-  #     DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
-  #     StorageEncrypted: True
-  #     KmsKeyId: !Ref DbKmsKey
-  #     VpcSecurityGroupIds:
-  #       - !Ref DatabaseSecurityGroup
+  DatabaseDBCluster:
+    Metadata:
+      'aws:copilot:description': 'The database Aurora Serverless database cluster'
+    Type: 'AWS::RDS::DBCluster'
+    Condition: ISProduction
+    DeletionPolicy: Snapshot
+    Properties:
+      Engine: !FindInMap [DatabaseConfigurationMap, !Ref Env, Engine]
+      EngineVersion: !FindInMap [DatabaseConfigurationMap, !Ref Env, EngineVersion]
+      BackupRetentionPeriod: !FindInMap [DatabaseConfigurationMap, !Ref Env, BackupRetentionPeriod]
+      MasterUsername:
+        !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:username}}" ]]
+      MasterUserPassword:
+        !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:password}}" ]]
+      DatabaseName: !Ref DBName
+      DBClusterParameterGroupName: !Ref DatabaseDBClusterParameterGroup
+      DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
+      StorageEncrypted: True
+      KmsKeyId: !Ref DbKmsKey
+      VpcSecurityGroupIds:
+        - !Ref DatabaseSecurityGroup
 
-  # DatabaseSecretAuroraClusterAttachment:
-  #   Type: AWS::SecretsManager::SecretTargetAttachment
-  #   Properties:
-  #     SecretId: !Ref DatabaseSecret
-  #     TargetId: !Ref DatabaseDBCluster
-  #     TargetType: AWS::RDS::DBCluster
+  DatabaseSecretAuroraClusterAttachment:
+    Type: AWS::SecretsManager::SecretTargetAttachment
+    Condition: ISProduction
+    Properties:
+      SecretId: !Ref DatabaseSecret
+      TargetId: !Ref DatabaseDBCluster
+      TargetType: AWS::RDS::DBCluster
 
-  # For alpha ------------------------------------------------------------------------------------------------------------------
+  # For staging ------------------------------------------------------------------------------------------------------------------
   DBParameterGroup:
     Type: 'AWS::RDS::DBParameterGroup'
     Condition: ISNotProduction

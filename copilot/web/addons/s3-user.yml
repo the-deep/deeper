@@ -1,0 +1,40 @@
+Parameters:
+  App:
+    Type: String
+    Description: Your application's name.
+  Env:
+    Type: String
+    Description: The environment name your service, job, or workflow is being deployed to.
+  Name:
+    Type: String
+    Description: The name of the service, job, or workflow being deployed.
+
+Resources:
+  # NOTE: Only for Production:web (this user is used to generate Signed s3 Auth URL)
+  S3AccessUser:
+    Type: AWS::IAM::User
+    Properties:
+      UserName: !Sub '${App}-${Env}-S3-user'
+      ManagedPolicyArns:
+        - !Ref S3MediaAccessPolicy   # From ./s3-media.yml
+        - !Ref S3StaticAccessPolicy  # From ./s3-static.yml
+
+  # TODO: Auto rotate this keys using lambda
+  S3AccessUserKey:
+    Type: AWS::IAM::AccessKey
+    Properties:
+      Status: Active
+      UserName: !Ref S3AccessUser
+
+  S3AccessUserKeySecret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub '${App}-${Env}-S3UserAccessKey'
+      Description: !Sub '${App} ${Env} access key for web services.'
+      SecretString: !Sub '{"AccessKeyId":"${S3AccessUserKey}","SecretAccessKey":"${S3AccessUserKey.SecretAccessKey}"}'
+
+
+Outputs:
+  DeepBucketAccessUserSecret: # injected as DEEP_BUCKET_ACCESS_USER_SECRET environment variable by Copilot.
+    Description: "The JSON secret that holds the IAM access keys. Fields are 'AccessKeyId', 'SecretAccessKey'"
+    Value: !Ref S3AccessUserKeySecret

@@ -14,7 +14,7 @@ Mappings:
     # prod:
     #   MinCapacity: 1
     #   MaxCapacity: 5
-    alpha:
+    staging:
       MinCapacity: 1
       MaxCapacity: 3
 

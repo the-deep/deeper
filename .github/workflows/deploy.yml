@@ -1,0 +1,157 @@
+name: Deep client Deployment
+
+on:
+  push:
+    branches:
+      - feature/new-deployment
+
+jobs:
+  test_build:
+    name: Lint + Test + Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Read deploy config
+        id: deploy_config
+        run: |
+          SUB_MODULES_DEP_FILE=./sub-modules-dep.json
+          DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${SUB_MODULES_DEP_FILE}`
+          DEEP_CLIENT_REPO=`jq -r '.client.repo' ${SUB_MODULES_DEP_FILE}`
+          DEEP_CLIENT_BRANCH=`jq -r '.client.branch' ${SUB_MODULES_DEP_FILE}`
+          if ! [ "${DEEP_CLIENT_DEPLOY,,}" = "true" ]; then
+            echo 'No deployment required!!';
+            exit 1;
+          fi
+          echo ::set-output name=deep_client_repo::${DEEP_CLIENT_REPO#https://github.com/}
+          echo ::set-output name=deep_client_branch::${DEEP_CLIENT_BRANCH}
+
+      - name: Clone client
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ steps.deploy_config.outputs.deep_client_repo }}
+          ref: ${{ steps.deploy_config.outputs.deep_client_branch }}
+          path: ./client
+
+      - name: 🐳 Prepare Docker
+        id: prep
+        run: |
+          TAG=$(echo $GITHUB_SHA | head -c7)
+          IMAGE="docker.pkg.github.com/the-deep/client"
+          echo ::set-output name=tagged_image::${IMAGE}:${TAG}
+          echo ::set-output name=tag::${TAG}
+      - name: 🐳 Set up Docker Buildx
+        id: buildx
+        uses: docker/setup-buildx-action@master
+
+      - name: 🐳 Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-single-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-single-buildx
+
+      - name: 🐳 Build image
+        uses: docker/build-push-action@v2
+        with:
+          context: ./client/  # Custom
+          builder: ${{ steps.buildx.outputs.name }}
+          file: ./client/Dockerfile  # Custom
+          push: false # This would be set to true in a real world deployment scenario.
+          load: true
+          tags: ${{ steps.prep.outputs.tagged_image }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new
+
+      - name: 🤞 Run Build + Lint + Test 🧪
+        env:
+            DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
+        run: |
+          python -c "import fcntl; fcntl.fcntl(1, fcntl.F_SETFL, 0)" && \
+          docker run --rm --workdir="/code/" $DOCKER_IMAGE sh -c 'yarn lint'
+
+        # Temp fix
+        # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
+        # https://github.com/docker/build-push-action/issues/252
+        # https://github.com/moby/buildkit/issues/1896
+      - name: 🐳 Move docker cache (🧙 Hack fix)
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+
+      # [End] From client .github/workflows/ci.yml
+
+      - name: Build [Staging]
+        env:
+          DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
+          # React build configs
+          REACT_APP_DEEP_ENVIRONMENT: staging
+          REACT_APP_API_END: staging-api.thedeep.io
+          REACT_APP_ADMIN_END: staging-api.thedeep.io
+          REACT_APP_API_HTTPS: https
+          REACT_APP_ASSESSMENT_REGISTRY_END: staging-ary.thedeep.io
+          REACT_APP_ASSESSMENT_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
+          REACT_APP_SERVERLESS_DOMAIN: https://services-alpha.thedeep.io
+          REACT_APP_GRAPHQL_ENDPOINT: https://staging-api.thedeep.io/graphql
+          REACT_APP_HCATPCHA_SITEKEY: ac332154-0c48-4fc1-9092-e52b291d903c
+          # HID
+          REACT_APP_HID_CLIENT_ID: deeper-staging
+          REACT_APP_HID_AUTH_URI: https://auth.humanitarian.id
+          REACT_APP_HID_CLIENT_REDIRECT_URL: https://staging.thedeep.io/login/
+          # Sentry
+          REACT_APP_SENTRY_DSN: https://9a60f35c6a1c45fe999727c5f6f7229c@sentry.io/1220157
+          # Viz
+          REACT_APP_ARY_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
+          REACT_APP_ENTRY_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
+          # Mapbox # FIXME: Make sure to use valid token for deep domain.
+          REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoiZGVlcG1hcHoiLCJhIjoiY2pjMjN1bjBxMGJmYjJ3bnpwZXlydzNkeiJ9.vYTnFCIPiRCT8jA33Dti5A
+          REACT_APP_MAPBOX_STYLE: mapbox://styles/deepmapz/cjc8oth8775tu2sr0eeymm3qv
+          # GA Tracking
+          REACT_APP_GA_TRACKING_ID: UA-112330910-1
+          # REACT_APP_DEEPL_END:
+          # REACT_APP_BROWSER_EXTENSION_ID:
+        run: |
+          env > env && \
+          docker run --rm --env-file=./env -v `pwd`/client/build:/code/build $DOCKER_IMAGE sh -c 'yarn install && CI=false NODE_OPTIONS=--max_old_space_size=4096 yarn build'
+
+      - name: Upload artifacts [Staging]
+        uses: actions/upload-artifact@v2
+        with:
+          name: client-build-staging
+          path: ./client/build/
+
+  staging_deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment:
+      name: staging
+      url: https://staging.thedeep.io
+    needs: test_build
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: client-build-staging
+          path: build
+
+      # Copy build to S3
+      - name: S3 Sync
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:  ${{ secrets.AWS_REGION }}
+          SOURCE_DIR: './build'
+
+      # Invalidate Cloudfront (this action)
+      - name: Cloudfront Invalidate
+        uses: chetan/invalidate-cloudfront-action@master
+        env:
+          DISTRIBUTION: ${{ secrets.AWS_CDN_DISTRIBUTION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:  ${{ secrets.AWS_REGION }}
+          PATHS: '/index.html'

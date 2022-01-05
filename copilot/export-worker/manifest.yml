@@ -58,7 +58,7 @@ secrets:
 
 
 environments:
-  alpha:
+  staging:
     count:
       spot: 1
 

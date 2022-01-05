@@ -1,10 +1,12 @@
 {
     "client": {
         "repo": "https://github.com/the-deep/client",
-        "branch": "develop-new"
+        "branch": "feature/new-deployment-changes",
+        "deploy": true
     },
     "server": {
         "repo": "https://github.com/the-deep/server",
-        "branch": "feature/new-deployment-changes"
+        "branch": "feature/new-deployment-changes",
+        "deploy": false
     }
 }
