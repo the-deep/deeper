@@ -61,9 +61,3 @@ environments:
   staging:
     count:
       spot: 1
-
-  # prod:
-  #   count:
-  #     range: 1-4
-  #     requests: 1000
-  #     spot_from: 2

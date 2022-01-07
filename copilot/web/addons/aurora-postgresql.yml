@@ -25,16 +25,18 @@ Mappings:
   DatabaseConfigurationMap:
     prod:
       DBFamily: 'aurora-postgresql13'
-      DBInstanceClass: db.t2.medium
+      DBInstanceClass: db.r5.large
       Engine: aurora-postgresql
       EngineVersion: '13.4'
       BackupRetentionPeriod: 7
+      Port: 5432
     staging:
       DBFamily: 'postgres13'
       DBInstanceClass: db.t3.small
       Engine: postgres
       EngineVersion: '13.4'
       BackupRetentionPeriod: 7
+      Port: 5432
 
 Resources:
   # KMS Key
@@ -102,8 +104,8 @@ Resources:
     Properties:
       GroupDescription: !Sub 'The Security Group for ${Name} to access DB cluster/instance database.'
       SecurityGroupIngress:
-        - ToPort: 5432
-          FromPort: 5432
+        - ToPort: !FindInMap [DatabaseConfigurationMap, !Ref Env, Port]
+          FromPort: !FindInMap [DatabaseConfigurationMap, !Ref Env, Port]
           IpProtocol: tcp
           Description: !Sub 'From the DB Security Group of the workload ${Name}.'
           SourceSecurityGroupId: { 'Fn::ImportValue': !Sub '${App}-${Env}-EnvironmentSecurityGroup' }
@@ -143,7 +145,7 @@ Resources:
     Condition: ISProduction
     Properties:
       Description: !Ref 'AWS::StackName'
-      Family: 'aurora-postgresql10'
+      Family: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBFamily]
       Parameters:
         client_encoding: 'UTF8'
         rds.force_ssl: 1
@@ -167,8 +169,29 @@ Resources:
       DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
       StorageEncrypted: True
       KmsKeyId: !Ref DbKmsKey
+      Port: !FindInMap [DatabaseConfigurationMap, !Ref Env, Port]
       VpcSecurityGroupIds:
         - !Ref DatabaseSecurityGroup
+
+  DatabaseDBClusterInstanceParameterGroup:
+    Type: 'AWS::RDS::DBParameterGroup'
+    Condition: ISProduction
+    Properties:
+      Description: !Ref 'AWS::StackName'
+      Family: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBFamily]
+
+  DatabaseDBClusterInstance1:
+    Type: 'AWS::RDS::DBInstance'
+    Condition: ISProduction
+    Properties:
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      CopyTagsToSnapshot: true
+      DBClusterIdentifier: !Ref DatabaseDBCluster
+      DBInstanceClass: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBInstanceClass]
+      DBParameterGroupName: !Ref DatabaseDBClusterInstanceParameterGroup
+      DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
+      Engine: !FindInMap [DatabaseConfigurationMap, !Ref Env, Engine]
 
   DatabaseSecretAuroraClusterAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
@@ -213,6 +236,7 @@ Resources:
       DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
       DBParameterGroupName: !Ref DBParameterGroup
       PubliclyAccessible: false
+      Port: !FindInMap [DatabaseConfigurationMap, !Ref Env, Port]
       VPCSecurityGroups:
         - !Ref DatabaseSecurityGroup
 

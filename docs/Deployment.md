@@ -59,4 +59,29 @@ copilot svc deploy --name export-worker --env staging
 ```
 
 ### Pipeline Setup
-pass
+```bash
+copilot pipeline update
+```
+
+### Deploy (Prod)
+```bash
+# Setup prod
+copilot env init --name prod --profile {profile} --default-config
+
+# Make sure to upload secrets for prod
+
+copilot svc deploy --name web --env prod
+# Exec to the server
+copilot svc exec --name web --env prod
+# -- Inside container --
+# Initial collectstatic & migrations
+./manage.py collectstatic --no-input
+./manage.py migrate  # Or migrate data manually.
+
+# Before deploying worker, export-worker, we need to manually change the template for now.
+# Make sure to not include auto-scaling addons and resource-describer on creation and then include on second deploy (i.e update)
+# https://github.com/aws/copilot-cli/issues/3149
+copilot svc deploy --name worker --env prod
+copilot svc deploy --name export-worker --env prod
+```
+

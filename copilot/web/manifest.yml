@@ -60,11 +60,15 @@ environments:
     count:
       spot: 1
 
-  # prod:
-  #   count:
-  #     range: 1-4
-  #     requests: 1000
-  #     spot_from: 2
-  # secrets:
-  #   S3_AWS_ACCESS_KEY_ID: /copilot/deep/prod/secrets/AWS_S3_ACCESS_KEY_ID
-  #   S3_AWS_SECRET_ACCESS_KEY: /copilot/deep/prod/secrets/AWS_S3_SECRET_ACCESS_KEY
+  prod:
+    cpu: 1024
+    memory: 8192
+
+    http:
+      alias: prod-api.thedeep.io
+    count:
+      spot: 1
+    # count:  TODO: USE this
+    #   range: 1-4
+    #   requests: 1000
+    #   spot_from: 2

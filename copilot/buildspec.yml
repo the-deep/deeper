@@ -28,15 +28,15 @@ phases:
   build:
     commands:  # Custom
       - echo "Cloning server"
-      - export SUB_MODULES_DEP_FILE=./sub-modules-dep.json
+      - export SUB_MODULES_DEP_FILE=./deploy.json
       - export DEEP_SERVER_DEPLOY=`jq -r '.server.deploy' ${SUB_MODULES_DEP_FILE}`
       - export DEEP_SERVER_REPO=`jq -r '.server.repo' ${SUB_MODULES_DEP_FILE}`
       - export DEEP_SERVER_BRANCH=`jq -r '.server.branch' ${SUB_MODULES_DEP_FILE}`
       - >
         if ! [ "${DEEP_SERVER_DEPLOY,,}" = "true" ]; then
           echo 'No deployment required!!';
-          aws codebuild stop-build --id ${CODEBUILD_BUILD_ID}
-          exit 0;
+          # TODO: Stop build instead of failure.
+          exit 1;
         fi
       - git clone --depth 1 --branch=${DEEP_SERVER_BRANCH} ${DEEP_SERVER_REPO} ./server
       # Server

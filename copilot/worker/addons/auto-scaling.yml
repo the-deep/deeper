@@ -11,12 +11,12 @@ Parameters:
 
 Mappings:
   ScalingCapacity:
-    # prod:
-    #   MinCapacity: 1
-    #   MaxCapacity: 5
+    prod:
+      MinCapacity: 1
+      MaxCapacity: 1  # TODO: Increase this
     staging:
       MinCapacity: 1
-      MaxCapacity: 3
+      MaxCapacity: 2
 
 
 Resources:

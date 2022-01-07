@@ -15,7 +15,7 @@ jobs:
       - name: Read deploy config
         id: deploy_config
         run: |
-          SUB_MODULES_DEP_FILE=./sub-modules-dep.json
+          SUB_MODULES_DEP_FILE=./deploy.json
           DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${SUB_MODULES_DEP_FILE}`
           DEEP_CLIENT_REPO=`jq -r '.client.repo' ${SUB_MODULES_DEP_FILE}`
           DEEP_CLIENT_BRANCH=`jq -r '.client.branch' ${SUB_MODULES_DEP_FILE}`
@@ -121,8 +121,47 @@ jobs:
           name: client-build-staging
           path: ./client/build/
 
+      - name: Build [Prod]
+        env:
+          DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
+          # React build configs
+          REACT_APP_DEEP_ENVIRONMENT: prod
+          REACT_APP_API_END: prod-api.thedeep.io
+          REACT_APP_ADMIN_END: prod-api.thedeep.io
+          REACT_APP_API_HTTPS: https
+          REACT_APP_ASSESSMENT_REGISTRY_END: prod-ary.thedeep.io
+          REACT_APP_ASSESSMENT_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
+          REACT_APP_SERVERLESS_DOMAIN: https://services.thedeep.io
+          REACT_APP_GRAPHQL_ENDPOINT: https://prod-api.thedeep.io/graphql
+          REACT_APP_HCATPCHA_SITEKEY: ac332154-0c48-4fc1-9092-e52b291d903c
+          # HID
+          REACT_APP_HID_CLIENT_ID: deeper-prod
+          REACT_APP_HID_AUTH_URI: https://auth.humanitarian.id
+          REACT_APP_HID_CLIENT_REDIRECT_URL: https://app.thedeep.io/login/
+          # Sentry
+          REACT_APP_SENTRY_DSN: https://9a60f35c6a1c45fe999727c5f6f7229c@sentry.io/1220157
+          # Viz
+          REACT_APP_ARY_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
+          REACT_APP_ENTRY_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
+          # Mapbox # FIXME: Make sure to use valid token for deep domain.
+          REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoiZGVlcG1hcHoiLCJhIjoiY2pjMjN1bjBxMGJmYjJ3bnpwZXlydzNkeiJ9.vYTnFCIPiRCT8jA33Dti5A
+          REACT_APP_MAPBOX_STYLE: mapbox://styles/deepmapz/cjc8oth8775tu2sr0eeymm3qv
+          # GA Tracking
+          REACT_APP_GA_TRACKING_ID: UA-112330910-1
+          # REACT_APP_DEEPL_END:
+          # REACT_APP_BROWSER_EXTENSION_ID:
+        run: |
+          env > env && \
+          docker run --rm --env-file=./env -v `pwd`/client/build:/code/build $DOCKER_IMAGE sh -c 'yarn install && CI=false NODE_OPTIONS=--max_old_space_size=4096 yarn build'
+
+      - name: Upload artifacts [Prod]
+        uses: actions/upload-artifact@v2
+        with:
+          name: client-build-prod
+          path: ./client/build/
+
   staging_deploy:
-    name: Deploy
+    name: Deploy (STAGING)
     runs-on: ubuntu-latest
     environment:
       name: staging
@@ -132,6 +171,41 @@ jobs:
       - uses: actions/download-artifact@v1
         with:
           name: client-build-staging
+          path: build
+
+      # Copy build to S3
+      - name: S3 Sync
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --acl public-read --follow-symlinks --delete
+        env:
+          AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:  ${{ secrets.AWS_REGION }}
+          SOURCE_DIR: './build'
+
+      # Invalidate Cloudfront (this action)
+      - name: Cloudfront Invalidate
+        uses: chetan/invalidate-cloudfront-action@master
+        env:
+          DISTRIBUTION: ${{ secrets.AWS_CDN_DISTRIBUTION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_REGION:  ${{ secrets.AWS_REGION }}
+          PATHS: '/index.html'
+
+  prod_deploy:
+    name: Deploy (PROD)
+    runs-on: ubuntu-latest
+    environment:
+      name: prod
+      url: https://app.thedeep.io
+    needs: [test_build, staging_deploy]
+    steps:
+      - uses: actions/download-artifact@v1
+        with:
+          name: client-build-prod
           path: build
 
       # Copy build to S3

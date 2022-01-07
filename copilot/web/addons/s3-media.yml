@@ -30,6 +30,16 @@ Resources:
       PublicAccessBlockConfiguration:
         BlockPublicAcls: true
         BlockPublicPolicy: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3600
 
   S3MediaBucketPolicy:
     Metadata:
@@ -87,5 +97,3 @@ Outputs:
   S3MediaAccessPolicy:
     Description: "The IAM::ManagedPolicy to attach to the task role"
     Value: !Ref S3MediaAccessPolicy
-    Export:
-      Name: !Sub ${App}-${Env}-S3MediaAccessPolicy

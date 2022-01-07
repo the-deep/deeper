@@ -14,9 +14,9 @@ Parameters:
 
 Mappings:
   ElasticCacheConfigurationMap:
-    # prod:
-    #   CacheNodeType: cache.t2.micro
-    #   NumCacheNodes: 3
+    prod:
+      CacheNodeType: cache.t2.micro
+      NumCacheNodes: 1  # TODO: Change to 3
     staging:
       CacheNodeType: cache.t2.micro
       NumCacheNodes: 1
