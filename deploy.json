@@ -2,7 +2,7 @@
     "client": {
         "repo": "https://github.com/the-deep/client",
         "branch": "feature/new-deployment-changes",
-        "deploy": true
+        "deploy": false
     },
     "server": {
         "repo": "https://github.com/the-deep/server",

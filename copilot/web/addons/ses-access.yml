@@ -22,7 +22,7 @@ Resources:
             Action:
               - ses:GetSendQuota
               - ses:SendEmail
-              - ses:SendRawEmai
+              - ses:SendRawEmail
             Effect: Allow
             # NOTE: Try specific
             Resource: "*"

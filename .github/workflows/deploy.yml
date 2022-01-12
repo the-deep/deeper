@@ -3,7 +3,7 @@ name: Deep client Deployment
 on:
   push:
     branches:
-      - feature/new-deployment
+      - main
 
 jobs:
   test_build:

@@ -15,7 +15,7 @@ source:
   provider: GitHub
   # Additional properties that further specify the location of the artifacts.
   properties:
-    branch: feature/new-deployment
+    branch: main
     repository: https://github.com/the-deep/deeper
     # Optional: specify the name of an existing CodeStar Connections connection.
     # connection_name: a-connection

@@ -9,29 +9,31 @@ x-server: &base_server_setup
   stdin_open: true
   tty: true
   environment: &base_server_environment
-    DJANGO_DEBUG: True
-    DEEP_ENVIRONMENT: development
-    DEEP_FRONTEND_HOST: localhost:3000
-    DEEP_FRONTEND_ARY_HOST: localhost:3001
-    DJANGO_ALLOWED_HOST: localhost
-    SESSION_COOKIE_DOMAIN: localhost
-    CSRF_COOKIE_DOMAIN: localhost
-    EMAIL_FROM: dev@thedeep.io
+    # To overwrite this values. set the values in .env
+    DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+    DEEP_ENVIRONMENT: ${DEEP_ENVIRONMENT:-development}
+    DEEP_FRONTEND_HOST: ${DEEP_FRONTEND_HOST:-localhost:3000}
+    DEEP_FRONTEND_ARY_HOST: ${DEEP_FRONTEND_ARY_HOST:-localhost:3001}
+    DEEP_BACKEND_HOST: ${DEEP_BACKEND_HOST:-localhost:8000}
+    DJANGO_ALLOWED_HOST: ${DJANGO_ALLOWED_HOST:-localhost}
+    SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-localhost}
+    CSRF_COOKIE_DOMAIN: ${CSRF_COOKIE_DOMAIN:-localhost}
+    EMAIL_FROM: ${EMAIL_FROM:-dev@thedeep.io}
     # From db.environment
-    DATABASE_NAME: deep
-    DATABASE_USER: postgres
-    DATABASE_PASSWORD: postgres
-    DATABASE_PORT: 5432
-    DATABASE_HOST: db
+    DATABASE_NAME: ${DATABASE_NAME:-deep}
+    DATABASE_USER: ${DATABASE_USER:-postgres}
+    DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+    DATABASE_PORT: ${DATABASE_PORT:-5432}
+    DATABASE_HOST: ${DATABASE_HOST:-db}
     # From redis
-    CELERY_REDIS_URL: redis://redis:6379/0
-    DJANGO_CACHE_REDIS_URL: redis://redis:6379/2
+    CELERY_REDIS_URL: ${CELERY_REDIS_URL:-redis://redis:6379/0}
+    DJANGO_CACHE_REDIS_URL: ${DJANGO_CACHE_REDIS_URL:-redis://redis:6379/2}
     # HID
-    HID_CLIENT_ID: deep-local
-    HID_CLIENT_REDIRECT_URL: http://localhost:3000/login/
-    HID_AUTH_URI: https://api2.dev.humanitarian.id
+    HID_CLIENT_ID: ${HID_CLIENT_ID:-deep-local}
+    HID_CLIENT_REDIRECT_URL: ${HID_CLIENT_REDIRECT_URL:-http://localhost:3000/login/}
+    HID_AUTH_URI: ${HID_AUTH_URI:-https://api2.dev.humanitarian.id}
   env_file:
-    - server.env
+    - .env
   volumes:
     - ./server/:/code
     - media:/media
@@ -49,7 +51,7 @@ services:
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: deep
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data13:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
       interval: 10s
@@ -75,7 +77,7 @@ services:
     environment:
       <<: *base_server_environment
       SERVICE_ENVIRONMENT_TYPE: web
-    command: bash -c '/code/scripts/run_web.sh'
+    command: bash -c 'wait-for-it $$DATABASE_HOST:$$DATABASE_PORT && /code/scripts/run_web.sh'
     ports:
       - '8000:8000'
 
@@ -102,13 +104,14 @@ services:
       context: ./client/
     tty: true
     environment:
-      GRAPHQL_CODEGEN_ENDPOINT: http://localhost:8000/graphql
-      REACT_APP_GRAPHQL_ENDPOINT: http://localhost:8000/graphql
-      REACT_APP_API_END: localhost:8000
-      REACT_APP_ADMIN_END: localhost:8000
-      REACT_APP_DEEP_ENVIRONMENT: development
+      # To overwrite this values. set the values in .env
+      GRAPHQL_CODEGEN_ENDPOINT: ${GRAPHQL_CODEGEN_ENDPOINT:-http://web:8000/graphql}
+      REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:8000/graphql}
+      REACT_APP_API_END: ${REACT_APP_API_END:-localhost:8000}
+      REACT_APP_ADMIN_END: ${REACT_APP_ADMIN_END:-localhost:8000}
+      REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
     env_file:
-      - client.env
+      - .env
     command: bash -c '/code/scripts/run_develop.sh'
     volumes:
       - ./client/:/code
@@ -118,5 +121,5 @@ services:
 
 volumes:
   media:
-  postgres-data:
+  postgres-data13:
   redis-data:
