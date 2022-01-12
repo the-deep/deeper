@@ -90,7 +90,7 @@ jobs:
           REACT_APP_API_END: staging-api.thedeep.io
           REACT_APP_ADMIN_END: staging-api.thedeep.io
           REACT_APP_API_HTTPS: https
-          REACT_APP_ASSESSMENT_REGISTRY_END: staging-ary.thedeep.io
+          REACT_APP_ASSESSMENT_REGISTRY_END: https://staging-ary.thedeep.io
           REACT_APP_ASSESSMENT_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
           REACT_APP_SERVERLESS_DOMAIN: https://services-alpha.thedeep.io
           REACT_APP_GRAPHQL_ENDPOINT: https://staging-api.thedeep.io/graphql
@@ -129,7 +129,7 @@ jobs:
           REACT_APP_API_END: prod-api.thedeep.io
           REACT_APP_ADMIN_END: prod-api.thedeep.io
           REACT_APP_API_HTTPS: https
-          REACT_APP_ASSESSMENT_REGISTRY_END: prod-ary.thedeep.io
+          REACT_APP_ASSESSMENT_REGISTRY_END: https://prod-ary.thedeep.io
           REACT_APP_ASSESSMENT_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
           REACT_APP_SERVERLESS_DOMAIN: https://services.thedeep.io
           REACT_APP_GRAPHQL_ENDPOINT: https://prod-api.thedeep.io/graphql

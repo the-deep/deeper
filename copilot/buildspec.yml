@@ -67,7 +67,7 @@ phases:
 
   post_build:
     commands:
-      - ls -l *
+      - ls -l
       - export COLOR="false"
       # First, upgrade the cloudformation stack of every environment in the pipeline.
       - pipeline=$(cat $CODEBUILD_SRC_DIR/copilot/pipeline.yml | ruby -ryaml -rjson -e 'puts JSON.pretty_generate(YAML.load(ARGF))')
@@ -120,8 +120,9 @@ phases:
           if [ -f "$ADDONSFILE" ]; then
             tmp=$(mktemp)
             timestamp=$(date +%s)
-            aws s3 cp "$ADDONSFILE" "s3://stackset-deep-infrastruc-pipelinebuiltartifactbuc-1s9z76dcs1kj6/manual/$timestamp/$workload.addons.stack.yml";
-            jq --arg a "https://stackset-deep-infrastruc-pipelinebuiltartifactbuc-1s9z76dcs1kj6.s3.us-east-1.amazonaws.com/manual/$timestamp/$workload.addons.stack.yml" '.Parameters.AddonsTemplateURL = $a' ./infrastructure/$workload-alpha.params.json > "$tmp" && mv "$tmp" ./infrastructure/$workload-alpha.params.json
+            aws s3 cp "$ADDONSFILE" "s3://stackset-deep-infrastruc-pipelinebuiltartifactbuc-13dg2hmi292yt/manual/$timestamp/$workload.addons.stack.yml";
+            jq --arg a "https://stackset-deep-infrastruc-pipelinebuiltartifactbuc-13dg2hmi292yt.s3.us-east-1.amazonaws.com/manual/$timestamp/$workload.addons.stack.yml" '.Parameters.AddonsTemplateURL = $a' ./infrastructure/$workload-staging.params.json > "$tmp" && mv "$tmp" ./infrastructure/$workload-staging.params.json
+            jq --arg a "https://stackset-deep-infrastruc-pipelinebuiltartifactbuc-13dg2hmi292yt.s3.us-east-1.amazonaws.com/manual/$timestamp/$workload.addons.stack.yml" '.Parameters.AddonsTemplateURL = $a' ./infrastructure/$workload-prod.params.json > "$tmp" && mv "$tmp" ./infrastructure/$workload-prod.params.json
           fi
         done;
       # Build images

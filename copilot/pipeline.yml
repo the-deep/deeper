@@ -22,8 +22,7 @@ source:
 
 # This section defines the order of the environments your pipeline will deploy to.
 stages:
-    - # The name of the environment.
-      name: staging
+    - name: staging  # The name of the environment.
       requires_approval: true
       # Optional: flag for manual approval action before deployment.
       # Optional: use test commands to validate this stage of your build.
@@ -38,3 +37,19 @@ stages:
         - ./copilot-linux svc exec -c "python3 manage.py collectstatic --no-input" -n web -e staging --yes
         - echo 'Running migrations'
         - ./copilot-linux svc exec -c "python3 manage.py migrate --no-input" -n web -e staging --yes
+
+    - name: prod  # The name of the environment.
+      requires_approval: true
+      # Optional: flag for manual approval action before deployment.
+      # Optional: use test commands to validate this stage of your build.
+      test_commands:
+        # Use this to run migration until we can do post deployment hooks from copilot
+        # https://github.com/aws/copilot-cli/issues/3007
+        - yum update -y && yum install -y sudo
+        - wget -q https://ecs-cli-v2-release.s3.amazonaws.com/copilot-linux-v1.13.0
+        - mv ./copilot-linux-v1.13.0 ./copilot-linux
+        - chmod +x ./copilot-linux
+        - echo 'Running collectstatic'
+        - ./copilot-linux svc exec -c "python3 manage.py collectstatic --no-input" -n web -e prod --yes
+        - echo 'Running migrations'
+        - ./copilot-linux svc exec -c "python3 manage.py migrate --no-input" -n web -e prod --yes
