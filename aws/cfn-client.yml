@@ -17,11 +17,17 @@ Mappings:
       BucketName: deep-staging-client
       UpdatePolicyName: deep-staging-client-update-policy
       UpdateIamUserName: deep-staging-client-update-user
+      AryDomain: staging-ary.thedeep.io
+      AryBucketName: deep-staging-ary-client
+      AryUpdatePolicyName: deep-staging-ary-client-update-policy
     prod:
       Domain: app.thedeep.io
       BucketName: deep-prod-client
       UpdatePolicyName: deep-prod-client-update-policy
       UpdateIamUserName: deep-prod-client-update-user
+      AryDomain: prod-ary.thedeep.io
+      AryBucketName: deep-prod-ary-client
+      AryUpdatePolicyName: deep-prod-ary-client-update-policy
 
 Resources:
   WebsiteBucket:
@@ -125,12 +131,116 @@ Resources:
               - !Join ['', ['arn:aws:s3:::', !Ref 'WebsiteBucket']]
               - !Join ['', ['arn:aws:s3:::', !Ref 'WebsiteBucket', /*]]
 
+  # -- ARY [Start]
+  AryWebsiteBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !FindInMap [EnvMaps, !Ref Env, AryBucketName]
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+
+  AryWebsiteBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref 'AryWebsiteBucket'
+      PolicyDocument:
+        Statement:
+        - Sid: PublicReadForGetBucketObjects
+          Effect: Allow
+          Principal: '*'
+          Action: s3:GetObject
+          Resource: !Join ['', ['arn:aws:s3:::', !Ref 'AryWebsiteBucket', /*]]
+
+  AryAcmCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !FindInMap [EnvMaps, !Ref Env, AryDomain]
+      DomainValidationOptions:
+        - DomainName: !FindInMap [EnvMaps, !Ref Env, AryDomain]
+          HostedZoneId: !Ref 'HostedZoneId'
+      ValidationMethod: DNS
+
+  AryWebsiteCloudfront:
+    Type: AWS::CloudFront::Distribution
+    DependsOn:
+    - AryWebsiteBucket
+    Properties:
+      DistributionConfig:
+        Comment: Cloudfront Distribution pointing to S3 bucket
+        Origins:
+        - DomainName: !Select [2, !Split ["/", !GetAtt AryWebsiteBucket.WebsiteURL]]
+          Id: S3Origin
+          CustomOriginConfig:
+            HTTPPort: '80'
+            HTTPSPort: '443'
+            OriginProtocolPolicy: http-only
+        Enabled: true
+        HttpVersion: 'http2'
+        DefaultRootObject: index.html
+        Aliases:
+        - !FindInMap [EnvMaps, !Ref Env, AryDomain]
+        DefaultCacheBehavior:
+          AllowedMethods:
+          - GET
+          - HEAD
+          Compress: true
+          TargetOriginId: S3Origin
+          ForwardedValues:
+            QueryString: true
+            Cookies:
+              Forward: none
+          ViewerProtocolPolicy: redirect-to-https
+        PriceClass: PriceClass_All
+        ViewerCertificate:
+          AcmCertificateArn: !Ref AryAcmCertificate
+          SslSupportMethod: sni-only
+
+  AryDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref 'HostedZoneId'
+      Comment: CNAME redirect custom name to CloudFront distribution
+      Name: !FindInMap [EnvMaps, !Ref Env, AryDomain]
+      Type: CNAME
+      TTL: '900'
+      ResourceRecords:
+      - !GetAtt [AryWebsiteCloudfront, DomainName]
+
+  AryClientUpdateIamPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      ManagedPolicyName: !FindInMap [EnvMaps, !Ref Env, AryUpdatePolicyName]
+      Description: Policy for to update static files and invalidate CloudFront cache
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action:
+              - cloudfront:CreateInvalidation
+            Effect: Allow
+            Resource:
+              - !Join ['', [!Sub 'arn:aws:cloudfront::${AWS::AccountId}:distribution/', !Ref 'AryWebsiteCloudfront']]
+          - Action:
+              - s3:DeleteObject
+              - s3:GetBucketLocation
+              - s3:GetObject
+              - s3:ListBucket
+              - s3:PutObject
+              - s3:PutObjectAcl
+            Effect: Allow
+            Resource:
+              - !Join ['', ['arn:aws:s3:::', !Ref 'AryWebsiteBucket']]
+              - !Join ['', ['arn:aws:s3:::', !Ref 'AryWebsiteBucket', /*]]
+  # -- ARY [END]
+
   ClientUpdateIamUser:
     Type: AWS::IAM::User
     Properties:
       UserName: !FindInMap [EnvMaps, !Ref Env, UpdateIamUserName]
       ManagedPolicyArns:
         - !Ref ClientUpdateIamPolicy
+        - !Ref AryClientUpdateIamPolicy
 
 Outputs:
   BucketName:
@@ -148,3 +258,18 @@ Outputs:
   UpdatePolicyName:
     Description: Policy to be used to update client files
     Value: !FindInMap [EnvMaps, !Ref Env, UpdatePolicyName]
+  AryBucketName:
+    Value: !Ref 'AryWebsiteBucket'
+    Description: Name of S3 bucket to hold website content
+  AryCloudfrontEndpoint:
+    Value: !GetAtt [AryWebsiteCloudfront, DomainName]
+    Description: Endpoint for Cloudfront distribution
+  AryCloudfrontDistributionId:
+    Value: !Ref 'AryWebsiteCloudfront'
+    Description: ID for Cloudfront distribution
+  AryDNSRecord:
+    Value: !Ref AryDNSRecord
+    Description: Custom DNS Record
+  AryUpdatePolicyName:
+    Description: Policy to be used to update client files
+    Value: !FindInMap [EnvMaps, !Ref Env, AryUpdatePolicyName]

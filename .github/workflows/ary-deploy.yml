@@ -1,4 +1,4 @@
-name: Deep client Deployment
+name: Deep client Deployment (ARY only)
 
 on:
   push:
@@ -11,8 +11,10 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       deploy: ${{ steps.config.outputs.deploy }}
-      branch: ${{ steps.config.outputs.branch }}
       repo: ${{ steps.config.outputs.repo }}
+      branch: ${{ steps.config.outputs.branch }}
+      react_store_branch: ${{ steps.config.outputs.react_store_branch }}
+      react_store_repo: ${{ steps.config.outputs.react_store_repo }}
     steps:
       - uses: actions/checkout@v2
 
@@ -20,12 +22,16 @@ jobs:
         id: config
         run: |
           SUB_MODULES_DEP_FILE=./deploy.json
-          DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${SUB_MODULES_DEP_FILE}`
-          DEEP_CLIENT_REPO=`jq -r '.client.repo' ${SUB_MODULES_DEP_FILE}`
-          DEEP_CLIENT_BRANCH=`jq -r '.client.branch' ${SUB_MODULES_DEP_FILE}`
+          DEEP_CLIENT_DEPLOY=`jq -r '.ary_client.deploy' ${SUB_MODULES_DEP_FILE}`
+          DEEP_CLIENT_REPO=`jq -r '.ary_client.repo' ${SUB_MODULES_DEP_FILE}`
+          DEEP_CLIENT_BRANCH=`jq -r '.ary_client.branch' ${SUB_MODULES_DEP_FILE}`
+          DEEP_REACT_STORE_REPO=`jq -r '.ary_client.react_store_repo' ${SUB_MODULES_DEP_FILE}`
+          DEEP_REACT_STORE_BRANCH=`jq -r '.ary_client.react_store_branch' ${SUB_MODULES_DEP_FILE}`
           echo ::set-output name=deploy::${DEEP_CLIENT_DEPLOY}
           echo ::set-output name=branch::${DEEP_CLIENT_BRANCH}
           echo ::set-output name=repo::${DEEP_CLIENT_REPO#https://github.com/}
+          echo ::set-output name=react_store_repo::${DEEP_REACT_STORE_REPO#https://github.com/}
+          echo ::set-output name=react_store_branch::${DEEP_REACT_STORE_BRANCH}
 
   test_build:
     name: Lint + Test + Build
@@ -39,6 +45,13 @@ jobs:
           repository: ${{ needs.deploy_config.outputs.repo }}
           ref: ${{ needs.deploy_config.outputs.branch }}
           path: ./client
+
+      - name: Clone client
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ needs.deploy_config.outputs.react_store_repo }}
+          ref: ${{ needs.deploy_config.outputs.react_store_branch }}
+          path: ./client/src/vendor/react-store
 
       - name: 🐳 Prepare Docker
         id: prep
@@ -57,7 +70,7 @@ jobs:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-single-buildx-${{ github.sha }}
           restore-keys: |
-            ${{ runner.os }}-single-buildx
+            ${{ runner.os }}-ary-single-buildx
 
       - name: 🐳 Build image
         uses: docker/build-push-action@v2
@@ -131,7 +144,7 @@ jobs:
       - name: Upload artifacts [Staging]
         uses: actions/upload-artifact@v2
         with:
-          name: client-build-staging
+          name: ary-client-build-staging
           path: ./client/build/
 
       - name: Build [Prod]
@@ -176,7 +189,7 @@ jobs:
       - name: Upload artifacts [Prod]
         uses: actions/upload-artifact@v2
         with:
-          name: client-build-prod
+          name: ary-client-build-prod
           path: ./client/build/
 
   staging_deploy:
@@ -184,12 +197,12 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: staging
-      url: https://staging.thedeep.io
+      url: https://staging-ary.thedeep.io
     needs: test_build
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: client-build-staging
+          name: ary-client-build-staging
           path: build
 
       # Copy build to S3
@@ -198,7 +211,7 @@ jobs:
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
-          AWS_S3_BUCKET: deep-staging-client
+          AWS_S3_BUCKET: deep-staging-ary-client
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION:  ${{ secrets.AWS_REGION }}
@@ -219,12 +232,12 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: prod
-      url: https://app.thedeep.io
+      url: https://prod-ary.thedeep.io
     needs: [test_build, staging_deploy]
     steps:
       - uses: actions/download-artifact@v1
         with:
-          name: client-build-prod
+          name: ary-client-build-prod
           path: build
 
       # Copy build to S3
@@ -233,7 +246,7 @@ jobs:
         with:
           args: --acl public-read --follow-symlinks --delete
         env:
-          AWS_S3_BUCKET: deep-prod-client
+          AWS_S3_BUCKET: deep-prod-ary-client
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION:  ${{ secrets.AWS_REGION }}
@@ -243,7 +256,7 @@ jobs:
       - name: Cloudfront Invalidate
         uses: chetan/invalidate-cloudfront-action@master
         env:
-          DISTRIBUTION: ${{ secrets.AWS_CDN_DISTRIBUTION }}
+          DISTRIBUTION: ${{ secrets.ARY_AWS_CDN_DISTRIBUTION }}
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION:  ${{ secrets.AWS_REGION }}

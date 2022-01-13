@@ -15,25 +15,19 @@ Parameters:
     # Cannot have special characters
     # Naming constraints: https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_Limits.html#RDS_Limits.Constraints
 
-Conditions:
-  ISProduction:
-    !Equals [!Ref Env, prod]
-  ISNotProduction:
-    !Not [Condition: ISProduction]
-
 Mappings:
   DatabaseConfigurationMap:
     prod:
       DBFamily: 'aurora-postgresql13'
-      DBInstanceClass: db.r5.large
+      DBInstanceClass: db.r6g.large
       Engine: aurora-postgresql
       EngineVersion: '13.4'
       BackupRetentionPeriod: 7
       Port: 5432
     staging:
-      DBFamily: 'postgres13'
-      DBInstanceClass: db.t3.small
-      Engine: postgres
+      DBFamily: 'aurora-postgresql13'
+      DBInstanceClass: db.t4g.medium
+      Engine: aurora-postgresql
       EngineVersion: '13.4'
       BackupRetentionPeriod: 7
       Port: 5432
@@ -73,22 +67,10 @@ Resources:
   AuroraKMSCMKAlias:
     Type: 'AWS::KMS::Alias'
     DeletionPolicy: Retain
-    Condition: ISProduction
     DependsOn: ['DatabaseDBCluster']
     Properties:
       AliasName: !Sub 'alias/copilot-${App}-${Env}-${Name}-${DatabaseDBCluster}'
       TargetKeyId: !Ref DbKmsKey
-
-  RdsKMSCMKAlias:
-    Type: 'AWS::KMS::Alias'
-    DeletionPolicy: Retain
-    UpdateReplacePolicy: Retain
-    Condition: ISNotProduction
-    DependsOn: ['RDSInstance']
-    Properties:
-      AliasName: !Sub 'alias/${AWS::StackName}-${RDSInstance}'
-      TargetKeyId: !Ref DbKmsKey
-  # --
 
   DatabaseDBSubnetGroup:
     Type: 'AWS::RDS::DBSubnetGroup'
@@ -142,7 +124,6 @@ Resources:
     Metadata:
       'aws:copilot:description': 'A DB parameter group for engine configuration values'
     Type: 'AWS::RDS::DBClusterParameterGroup'
-    Condition: ISProduction
     Properties:
       Description: !Ref 'AWS::StackName'
       Family: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBFamily]
@@ -154,16 +135,14 @@ Resources:
     Metadata:
       'aws:copilot:description': 'The database Aurora Serverless database cluster'
     Type: 'AWS::RDS::DBCluster'
-    Condition: ISProduction
     DeletionPolicy: Snapshot
     Properties:
+      DBClusterIdentifier: !Sub '${AWS::StackName}-Cluster'
       Engine: !FindInMap [DatabaseConfigurationMap, !Ref Env, Engine]
       EngineVersion: !FindInMap [DatabaseConfigurationMap, !Ref Env, EngineVersion]
       BackupRetentionPeriod: !FindInMap [DatabaseConfigurationMap, !Ref Env, BackupRetentionPeriod]
-      MasterUsername:
-        !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:username}}" ]]
-      MasterUserPassword:
-        !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:password}}" ]]
+      MasterUsername: !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:username}}" ]]
+      MasterUserPassword: !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:password}}" ]]
       DatabaseName: !Ref DBName
       DBClusterParameterGroupName: !Ref DatabaseDBClusterParameterGroup
       DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
@@ -175,15 +154,14 @@ Resources:
 
   DatabaseDBClusterInstanceParameterGroup:
     Type: 'AWS::RDS::DBParameterGroup'
-    Condition: ISProduction
     Properties:
       Description: !Ref 'AWS::StackName'
       Family: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBFamily]
 
   DatabaseDBClusterInstance1:
     Type: 'AWS::RDS::DBInstance'
-    Condition: ISProduction
     Properties:
+      DBInstanceIdentifier: !Sub '${AWS::StackName}-instance'
       AllowMajorVersionUpgrade: false
       AutoMinorVersionUpgrade: true
       CopyTagsToSnapshot: true
@@ -195,59 +173,10 @@ Resources:
 
   DatabaseSecretAuroraClusterAttachment:
     Type: AWS::SecretsManager::SecretTargetAttachment
-    Condition: ISProduction
     Properties:
       SecretId: !Ref DatabaseSecret
       TargetId: !Ref DatabaseDBCluster
       TargetType: AWS::RDS::DBCluster
-
-  # For staging ------------------------------------------------------------------------------------------------------------------
-  DBParameterGroup:
-    Type: 'AWS::RDS::DBParameterGroup'
-    Condition: ISNotProduction
-    Properties:
-      Description: !Ref 'AWS::StackName'
-      Family: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBFamily]
-      Parameters:
-        client_encoding: 'UTF8'
-        rds.force_ssl: 1
-
-  RDSInstance:
-    Type: "AWS::RDS::DBInstance"
-    Condition: ISNotProduction
-    DeletionPolicy: Snapshot
-    Properties:
-      DBInstanceIdentifier: !Sub '${App}-${Env}-db'
-      MasterUsername:
-        !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:username}}" ]]
-      MasterUserPassword:
-        !Join [ "",  [ '{{resolve:secretsmanager:', !Ref DatabaseSecret, ":SecretString:password}}" ]]
-      DBName: !Ref DBName
-      StorageEncrypted: True
-      KmsKeyId: !Ref DbKmsKey
-      AutoMinorVersionUpgrade: True
-      StorageType: "gp2"
-      AllocatedStorage: "20"
-      MaxAllocatedStorage: 50
-      DBInstanceClass: !FindInMap [DatabaseConfigurationMap, !Ref Env, DBInstanceClass]
-      Engine: !FindInMap [DatabaseConfigurationMap, !Ref Env, Engine]
-      EngineVersion: !FindInMap [DatabaseConfigurationMap, !Ref Env, EngineVersion]
-      BackupRetentionPeriod: !FindInMap [DatabaseConfigurationMap, !Ref Env, BackupRetentionPeriod]
-      DBSubnetGroupName: !Ref DatabaseDBSubnetGroup
-      DBParameterGroupName: !Ref DBParameterGroup
-      PubliclyAccessible: false
-      Port: !FindInMap [DatabaseConfigurationMap, !Ref Env, Port]
-      VPCSecurityGroups:
-        - !Ref DatabaseSecurityGroup
-
-  RdsDatabaseSecretAttachment:
-    Type: AWS::SecretsManager::SecretTargetAttachment
-    Condition: ISNotProduction
-    Properties:
-      SecretId: !Ref DatabaseSecret
-      TargetId: !Ref RDSInstance
-      TargetType: AWS::RDS::DBInstance
-
 
 Outputs:
   DeepDatabaseSecret: # injected as DEEP_DATABASE_SECRET environment variable by Copilot.

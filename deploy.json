@@ -2,11 +2,18 @@
     "client": {
         "repo": "https://github.com/the-deep/client",
         "branch": "develop-new",
-        "deploy": true
+        "deploy": false
+    },
+    "ary_client": {
+        "repo": "https://github.com/the-deep/client",
+        "branch": "feature/only-ary",
+        "react_store_repo": "https://github.com/toggle-corp/react-store",
+        "react_store_branch": "72a9230716d9eebdb4c506d99b64cebe6031b45c",
+        "deploy": false
     },
     "server": {
         "repo": "https://github.com/the-deep/server",
-        "branch": "feature/new-deployment-changes",
-        "deploy": false
+        "branch": "feature/nav-jan-fixes",
+        "deploy": true
     }
 }
