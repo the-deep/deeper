@@ -85,32 +85,38 @@ jobs:
       - name: Build [Staging]
         env:
           DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
-          # React build configs
+          # Misc
           REACT_APP_DEEP_ENVIRONMENT: staging
-          REACT_APP_API_END: staging-api.thedeep.io
-          REACT_APP_ADMIN_END: staging-api.thedeep.io
+          REACT_APP_DEBUG_MODE: true
+          # Endpoints
           REACT_APP_API_HTTPS: https
+          REACT_APP_API_END: staging-api.thedeep.io
+          REACT_APP_GRAPHQL_ENDPOINT: https://staging-api.thedeep.io/graphql
+          REACT_APP_SERVERLESS_DOMAIN: https://services-alpha.thedeep.io
+          # Iframes
           REACT_APP_ASSESSMENT_REGISTRY_END: https://staging-ary.thedeep.io
           REACT_APP_ASSESSMENT_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
-          REACT_APP_SERVERLESS_DOMAIN: https://services-alpha.thedeep.io
-          REACT_APP_GRAPHQL_ENDPOINT: https://staging-api.thedeep.io/graphql
-          REACT_APP_HCATPCHA_SITEKEY: ac332154-0c48-4fc1-9092-e52b291d903c
-          # HID
-          REACT_APP_HID_CLIENT_ID: deeper-staging
-          REACT_APP_HID_AUTH_URI: https://auth.humanitarian.id
-          REACT_APP_HID_CLIENT_REDIRECT_URL: https://staging.thedeep.io/login/
+          REACT_APP_ENTRY_VIZ_URL: https://the-deep.github.io/deepviz-entries/
+          # Chrome extension
+          REACT_APP_BROWSER_EXTENSION_ID: hkmakfhfikfhllpkfpkkaoonapclfajf
+          # Mapbox # FIXME: Make sure to use valid token for deep domain.
+          REACT_APP_MAPBOX_STYLE: mapbox://styles/deepmapz/cjc8oth8775tu2sr0eeymm3qv
+          REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoiZGVlcG1hcHoiLCJhIjoiY2pjMjN1bjBxMGJmYjJ3bnpwZXlydzNkeiJ9.vYTnFCIPiRCT8jA33Dti5A
+          # Google Analytics
+          REACT_APP_GA_TRACKING_ID: UA-112330910-1
           # Sentry
           REACT_APP_SENTRY_DSN: https://9a60f35c6a1c45fe999727c5f6f7229c@sentry.io/1220157
-          # Viz
-          REACT_APP_ARY_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
-          REACT_APP_ENTRY_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
-          # Mapbox # FIXME: Make sure to use valid token for deep domain.
-          REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoiZGVlcG1hcHoiLCJhIjoiY2pjMjN1bjBxMGJmYjJ3bnpwZXlydzNkeiJ9.vYTnFCIPiRCT8jA33Dti5A
-          REACT_APP_MAPBOX_STYLE: mapbox://styles/deepmapz/cjc8oth8775tu2sr0eeymm3qv
-          # GA Tracking
-          REACT_APP_GA_TRACKING_ID: UA-112330910-1
-          # REACT_APP_DEEPL_END:
-          # REACT_APP_BROWSER_EXTENSION_ID:
+          REACT_APP_SENTRY_TRACES_SAMPLE_RATE: 0.2
+          REACT_APP_SENTRY_NORMALIZE_DEPTH: 5
+          # HID
+          REACT_APP_HID_CLIENT_ID: deeper-staging
+          REACT_APP_HID_CLIENT_REDIRECT_URL: https://staging.thedeep.io/login/
+          REACT_APP_HID_AUTH_URI: https://auth.humanitarian.id
+          # Hcaptcha
+          REACT_APP_HCATPCHA_SITEKEY: ac332154-0c48-4fc1-9092-e52b291d903c
+          # Google Drive
+          REACT_APP_GOOGLE_DRIVE_DEVELOPER_KEY: AIzaSyAcaVOYWk0zGL9TVQfKXdziFI-5pEkw6X4
+          REACT_APP_GOOGLE_DRIVE_CLIENT_KEY: 642927279233-ht6v3t7h37cc4gjh336sbin6hdlup2vi.apps.googleusercontent.com
         run: |
           env > env && \
           docker run --rm --env-file=./env -v `pwd`/client/build:/code/build $DOCKER_IMAGE sh -c 'yarn install && CI=false NODE_OPTIONS=--max_old_space_size=4096 yarn build'
@@ -124,32 +130,38 @@ jobs:
       - name: Build [Prod]
         env:
           DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
-          # React build configs
+          # Misc
           REACT_APP_DEEP_ENVIRONMENT: prod
-          REACT_APP_API_END: prod-api.thedeep.io
-          REACT_APP_ADMIN_END: prod-api.thedeep.io
+          REACT_APP_DEBUG_MODE: false
+          # Endpoints
           REACT_APP_API_HTTPS: https
+          REACT_APP_API_END: prod-api.thedeep.io
+          REACT_APP_GRAPHQL_ENDPOINT: https://prod-api.thedeep.io/graphql
+          REACT_APP_SERVERLESS_DOMAIN: https://services.thedeep.io
+          # Iframes
           REACT_APP_ASSESSMENT_REGISTRY_END: https://prod-ary.thedeep.io
           REACT_APP_ASSESSMENT_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
-          REACT_APP_SERVERLESS_DOMAIN: https://services.thedeep.io
-          REACT_APP_GRAPHQL_ENDPOINT: https://prod-api.thedeep.io/graphql
-          REACT_APP_HCATPCHA_SITEKEY: ac332154-0c48-4fc1-9092-e52b291d903c
-          # HID
-          REACT_APP_HID_CLIENT_ID: deeper-prod
-          REACT_APP_HID_AUTH_URI: https://auth.humanitarian.id
-          REACT_APP_HID_CLIENT_REDIRECT_URL: https://app.thedeep.io/login/
-          # Sentry
-          REACT_APP_SENTRY_DSN: https://9a60f35c6a1c45fe999727c5f6f7229c@sentry.io/1220157
-          # Viz
-          REACT_APP_ARY_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
-          REACT_APP_ENTRY_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
+          REACT_APP_ENTRY_VIZ_URL: https://the-deep.github.io/deepviz-entries/
+          # Chrome extension
+          REACT_APP_BROWSER_EXTENSION_ID: hkmakfhfikfhllpkfpkkaoonapclfajf
           # Mapbox # FIXME: Make sure to use valid token for deep domain.
           REACT_APP_MAPBOX_ACCESS_TOKEN: pk.eyJ1IjoiZGVlcG1hcHoiLCJhIjoiY2pjMjN1bjBxMGJmYjJ3bnpwZXlydzNkeiJ9.vYTnFCIPiRCT8jA33Dti5A
           REACT_APP_MAPBOX_STYLE: mapbox://styles/deepmapz/cjc8oth8775tu2sr0eeymm3qv
-          # GA Tracking
+          # Google Analytics
           REACT_APP_GA_TRACKING_ID: UA-112330910-1
-          # REACT_APP_DEEPL_END:
-          # REACT_APP_BROWSER_EXTENSION_ID:
+          # Sentry
+          REACT_APP_SENTRY_DSN: https://9a60f35c6a1c45fe999727c5f6f7229c@sentry.io/1220157
+          REACT_APP_SENTRY_TRACES_SAMPLE_RATE: 0.2
+          REACT_APP_SENTRY_NORMALIZE_DEPTH: 5
+          # HID
+          REACT_APP_HID_CLIENT_ID: deeper-prod
+          REACT_APP_HID_CLIENT_REDIRECT_URL: https://app.thedeep.io/login/
+          REACT_APP_HID_AUTH_URI: https://auth.humanitarian.id
+          # Hcaptcha
+          REACT_APP_HCATPCHA_SITEKEY: ac332154-0c48-4fc1-9092-e52b291d903c
+          # Google Drive
+          REACT_APP_GOOGLE_DRIVE_DEVELOPER_KEY: AIzaSyAcaVOYWk0zGL9TVQfKXdziFI-5pEkw6X4
+          REACT_APP_GOOGLE_DRIVE_CLIENT_KEY: 642927279233-ht6v3t7h37cc4gjh336sbin6hdlup2vi.apps.googleusercontent.com
         run: |
           env > env && \
           docker run --rm --env-file=./env -v `pwd`/client/build:/code/build $DOCKER_IMAGE sh -c 'yarn install && CI=false NODE_OPTIONS=--max_old_space_size=4096 yarn build'
