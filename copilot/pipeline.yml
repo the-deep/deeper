@@ -34,9 +34,9 @@ stages:
         - mv ./copilot-linux-v1.13.0 ./copilot-linux
         - chmod +x ./copilot-linux
         - echo 'Running collectstatic'
-        - ./copilot-linux svc exec -c "python3 manage.py collectstatic --no-input" -n web -e staging --yes
+        - unbuffer ./copilot-linux svc exec -c "python3 manage.py collectstatic --no-input" -n web -e staging --yes
         - echo 'Running migrations'
-        - ./copilot-linux svc exec -c "python3 manage.py migrate --no-input" -n web -e staging --yes
+        - unbuffer ./copilot-linux svc exec -c "python3 manage.py migrate --no-input" -n web -e staging --yes
 
     - name: prod  # The name of the environment.
       requires_approval: true
@@ -50,6 +50,6 @@ stages:
         - mv ./copilot-linux-v1.13.0 ./copilot-linux
         - chmod +x ./copilot-linux
         - echo 'Running collectstatic'
-        - ./copilot-linux svc exec -c "python3 manage.py collectstatic --no-input" -n web -e prod --yes
+        - unbuffer ./copilot-linux svc exec -c "python3 manage.py collectstatic --no-input" -n web -e prod --yes
         - echo 'Running migrations'
-        - ./copilot-linux svc exec -c "python3 manage.py migrate --no-input" -n web -e prod --yes
+        - unbuffer ./copilot-linux svc exec -c "python3 manage.py migrate --no-input" -n web -e prod --yes

@@ -30,6 +30,54 @@ Mappings:
       AryUpdatePolicyName: deep-prod-ary-client-update-policy
 
 Resources:
+  CloudFrontFunction:
+    Type: AWS::CloudFront::Function
+    Properties:
+      Name: SetHttpSecurityHeaders
+      AutoPublish: true
+      FunctionCode: |
+        function handler(event) {
+          var response = event.response;
+          var headers = response.headers;
+          // CSP Polices
+          var csp_policy = {
+              'default-src': [
+                  "'self'", "'unsafe-eval'", "'unsafe-inline'" ,
+                  '*.thedeep.io', '*.*.thedeep.io', 'blob:', 'data:',
+                  // buckets
+                  'deeper-alpha.s3.amazonaws.com', 'deeper-prod-media.s3.amazonaws.com', 'nightly.thedeep.io.s3.amazonaws.com',
+                  'deeper-alpha-static.s3.amazonaws.com', 'deeper-beta-static.s3.amazonaws.com',
+                  // mapbox
+                  'api.mapbox.com', 'api.tiles.mapbox.com', 'events.mapbox.com',
+                  // google
+                  'fonts.gstatic.com', 'fonts.googleapis.com', 'apis.google.com', 'www.google-analytics.com', 'www.google.com', 'www.gstatic.com', 'stats.g.doubleclick.net',
+                  'cdnjs.cloudflare.com',
+                  'maxcdn.bootstrapcdn.com',
+                  'deephelp.zendesk.com', 'ekr.zdassets.com',
+                  'sentry.io',
+                  'static.zdassets.com',
+                  'www.dropbox.com',
+              ],
+              'report-uri': ['https://thedeep.report-uri.com/r/d/csp/wizard'],
+          };
+          var csp_policy_value = Object.keys(csp_policy).map(src => `${src} ${csp_policy[src].join(' ')};`).join(' ');
+
+          // Set HTTP security headers
+          // Since JavaScript doesn't allow for hyphens in variable names, we use the dict['key'] notation
+          // headers['content-security-policy'] = { value: "default-src 'none'; img-src 'self'; script-src 'self'; style-src 'self'; object-src 'none'"};
+          headers['strict-transport-security'] = { value: 'max-age=63072000; includeSubdomains; preload'};
+          headers['x-content-type-options'] = { value: 'nosniff'};
+          headers['x-frame-options'] = {value: 'DENY'};
+          headers['x-xss-protection'] = {value: '1; mode=block'};
+          headers['referrer-policy'] = {value: 'same-origin'};
+          headers['content-security-policy-report-only'] = {value: csp_policy_value};
+          // return response with security headers
+          return response;
+        }
+      FunctionConfig:
+        Comment: Set HTTP security headers
+        Runtime: cloudfront-js-1.0
+
   WebsiteBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -80,6 +128,9 @@ Resources:
         Aliases:
         - !FindInMap [EnvMaps, !Ref Env, Domain]
         DefaultCacheBehavior:
+          FunctionAssociations:
+              - EventType: viewer-response
+                FunctionARN: !GetAtt CloudFrontFunction.FunctionMetadata.FunctionARN
           AllowedMethods:
           - GET
           - HEAD

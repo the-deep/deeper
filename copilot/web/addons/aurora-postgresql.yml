@@ -138,6 +138,7 @@ Resources:
     DeletionPolicy: Snapshot
     Properties:
       DBClusterIdentifier: !Sub '${AWS::StackName}-Cluster'
+      DeletionProtection: true
       Engine: !FindInMap [DatabaseConfigurationMap, !Ref Env, Engine]
       EngineVersion: !FindInMap [DatabaseConfigurationMap, !Ref Env, EngineVersion]
       BackupRetentionPeriod: !FindInMap [DatabaseConfigurationMap, !Ref Env, BackupRetentionPeriod]

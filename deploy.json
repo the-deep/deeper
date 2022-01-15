@@ -2,7 +2,7 @@
     "client": {
         "repo": "https://github.com/the-deep/client",
         "branch": "develop-new",
-        "deploy": false
+        "deploy": true
     },
     "ary_client": {
         "repo": "https://github.com/the-deep/client",
@@ -13,7 +13,7 @@
     },
     "server": {
         "repo": "https://github.com/the-deep/server",
-        "branch": "feature/nav-jan-fixes",
+        "branch": "develop",
         "deploy": true
     }
 }
