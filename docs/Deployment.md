@@ -21,6 +21,11 @@ aws ssm put-parameter --name /copilot/global/DOCKERHUB_USERNAME --value <USERNAM
 aws ssm put-parameter --name /copilot/global/DOCKERHUB_TOKEN --value <TOKEN> --type SecureString --overwrite
 ```
 
+### Backup account info
+```
+aws ssm put-parameter --name /copilot/global/DEEP_BACKUP_ACCOUNT_ID --value <ACCOUNT-ID> --type String --overwrite
+```
+
 ### Init
 ```bash
 # Setup app with domain thedeep.io
@@ -85,3 +90,29 @@ copilot svc deploy --name worker --env prod
 copilot svc deploy --name export-worker --env prod
 ```
 
+### Old domain to new domain redirect
+```bash
+# For staging
+aws cloudformation deploy \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --template-file ./aws/cfn-domain-redirect.yml \
+    --stack-name deep-alpha-to-staging-redirect \
+    --parameter-overrides \
+        Env=staging \
+        HostedZoneId=XXXXXXXXXXXXXXXXXXXXX \
+    --tags \
+        app=deep \
+        env=staging
+
+# For prod
+aws cloudformation deploy \
+    --capabilities CAPABILITY_NAMED_IAM \
+    --template-file ./aws/cfn-domain-redirect.yml \
+    --stack-name deep-beta-to-prod-redirect \
+    --parameter-overrides \
+        Env=prod \
+        HostedZoneId=XXXXXXXXXXXXXXXXXXXXX \
+    --tags \
+        app=deep \
+        env=prod
+```

@@ -33,7 +33,7 @@ Resources:
   CloudFrontFunction:
     Type: AWS::CloudFront::Function
     Properties:
-      Name: SetHttpSecurityHeaders
+      Name: !Sub '${Env}-SetHttpSecurityHeaders'
       AutoPublish: true
       FunctionCode: |
         function handler(event) {
@@ -111,29 +111,29 @@ Resources:
   WebsiteCloudfront:
     Type: AWS::CloudFront::Distribution
     DependsOn:
-    - WebsiteBucket
+      - WebsiteBucket
     Properties:
       DistributionConfig:
         Comment: Cloudfront Distribution pointing to S3 bucket
         Origins:
-        - DomainName: !Select [2, !Split ["/", !GetAtt WebsiteBucket.WebsiteURL]]
-          Id: S3Origin
-          CustomOriginConfig:
-            HTTPPort: '80'
-            HTTPSPort: '443'
-            OriginProtocolPolicy: http-only
+          - DomainName: !Select [2, !Split ["/", !GetAtt WebsiteBucket.WebsiteURL]]
+            Id: S3Origin
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: http-only
         Enabled: true
         HttpVersion: 'http2'
         DefaultRootObject: index.html
         Aliases:
-        - !FindInMap [EnvMaps, !Ref Env, Domain]
+          - !FindInMap [EnvMaps, !Ref Env, Domain]
         DefaultCacheBehavior:
           FunctionAssociations:
-              - EventType: viewer-response
-                FunctionARN: !GetAtt CloudFrontFunction.FunctionMetadata.FunctionARN
+            - EventType: viewer-response
+              FunctionARN: !GetAtt CloudFrontFunction.FunctionMetadata.FunctionARN
           AllowedMethods:
-          - GET
-          - HEAD
+            - GET
+            - HEAD
           Compress: true
           TargetOriginId: S3Origin
           ForwardedValues:
@@ -155,7 +155,7 @@ Resources:
       Type: CNAME
       TTL: '900'
       ResourceRecords:
-      - !GetAtt [WebsiteCloudfront, DomainName]
+        - !GetAtt [WebsiteCloudfront, DomainName]
 
   ClientUpdateIamPolicy:
     Type: AWS::IAM::ManagedPolicy
@@ -216,26 +216,26 @@ Resources:
   AryWebsiteCloudfront:
     Type: AWS::CloudFront::Distribution
     DependsOn:
-    - AryWebsiteBucket
+      - AryWebsiteBucket
     Properties:
       DistributionConfig:
         Comment: Cloudfront Distribution pointing to S3 bucket
         Origins:
-        - DomainName: !Select [2, !Split ["/", !GetAtt AryWebsiteBucket.WebsiteURL]]
-          Id: S3Origin
-          CustomOriginConfig:
-            HTTPPort: '80'
-            HTTPSPort: '443'
-            OriginProtocolPolicy: http-only
+          - DomainName: !Select [2, !Split ["/", !GetAtt AryWebsiteBucket.WebsiteURL]]
+            Id: S3Origin
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: http-only
         Enabled: true
         HttpVersion: 'http2'
         DefaultRootObject: index.html
         Aliases:
-        - !FindInMap [EnvMaps, !Ref Env, AryDomain]
+          - !FindInMap [EnvMaps, !Ref Env, AryDomain]
         DefaultCacheBehavior:
           AllowedMethods:
-          - GET
-          - HEAD
+            - GET
+            - HEAD
           Compress: true
           TargetOriginId: S3Origin
           ForwardedValues:
@@ -257,7 +257,7 @@ Resources:
       Type: CNAME
       TTL: '900'
       ResourceRecords:
-      - !GetAtt [AryWebsiteCloudfront, DomainName]
+        - !GetAtt [AryWebsiteCloudfront, DomainName]
 
   AryClientUpdateIamPolicy:
     Type: AWS::IAM::ManagedPolicy

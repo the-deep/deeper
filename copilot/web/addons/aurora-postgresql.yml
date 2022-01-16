@@ -63,6 +63,29 @@ Resources:
               StringEquals:
                 'kms:CallerAccount': !Ref 'AWS::AccountId'
                 'kms:ViaService': !Sub 'rds.${AWS::Region}.amazonaws.com'
+          - Sid: "[Backup-account] Allow use of the key"
+            Effect: Allow
+            Principal:
+              AWS: "arn:aws:iam::{{resolve:ssm:/copilot/global/DEEP_BACKUP_ACCOUNT_ID}}:root"
+            Action:
+              - "kms:Encrypt"
+              - "kms:Decrypt"
+              - "kms:ReEncrypt*"
+              - "kms:GenerateDataKey*"
+              - "kms:DescribeKey"
+            Resource: "*"
+          - Sid: "[Backup-account] Allow attachment of persistent resources"
+            Effect: Allow
+            Principal:
+              AWS: "arn:aws:iam::{{resolve:ssm:/copilot/global/DEEP_BACKUP_ACCOUNT_ID}}:root"
+            Action:
+              - "kms:CreateGrant"
+              - "kms:ListGrants"
+              - "kms:RevokeGrant"
+            Resource: "*"
+            Condition:
+              Bool:
+                kms:GrantIsForAWSResource: "true"
 
   AuroraKMSCMKAlias:
     Type: 'AWS::KMS::Alias'

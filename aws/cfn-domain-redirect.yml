@@ -1,0 +1,165 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  Env:
+    Description: 'staging or prod'
+    Type: String
+  HostedZoneId:
+    Description: 'The Route 53 hosted zone ID to create the domain (source) in (e.g. ZZZZZZZZZZZZZZ).'
+    Type: String
+
+Mappings:
+  EnvMaps:
+    staging:  # Redirect from alpha (old staging) -> prod
+      ServerDomain: api.alpha.thedeep.io
+      ClientDomain: alpha.thedeep.io
+      NewServerDomain: staging-api.thedeep.io
+      NewClientDomain: staging.thedeep.io
+      SourceServerRedirectBucketName: deep-alpha-to-staging-server-redirect
+      SourceClientRedirectBucketName: deep-alpha-to-staging-client-redirect
+    prod:  # Redirect from beta -> prod
+      ServerDomain: api.thedeep.io
+      ClientDomain: beta.thedeep.io
+      NewServerDomain: prod-api.thedeep.io
+      NewClientDomain: app.thedeep.io
+      SourceServerRedirectBucketName: deep-beta-to-prod-server-redirect
+      SourceClientRedirectBucketName: deep-beta-to-prod-client-redirect
+
+Conditions:
+  IsProduction:
+    !Equals [!Ref Env, prod]
+  IsNotProduction:
+    !Not [Condition: IsProduction]
+
+Resources:
+  SourceServerDomainRedirectBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !FindInMap [EnvMaps, !Ref Env, SourceServerRedirectBucketName]
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !FindInMap [EnvMaps, !Ref Env, NewServerDomain]
+          Protocol: https
+
+  SourceClientDomainRedirectBucket:
+    Type: AWS::S3::Bucket
+    Condition: IsNotProduction  # For now don't deploy client for beta
+    Properties:
+      BucketName: !FindInMap [EnvMaps, !Ref Env, SourceClientRedirectBucketName]
+      AccessControl: PublicRead
+      WebsiteConfiguration:
+        RedirectAllRequestsTo:
+          HostName: !FindInMap [EnvMaps, !Ref Env, NewClientDomain]
+          Protocol: https
+
+  SourceServerDomainAcmCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Properties:
+      DomainName: !FindInMap [EnvMaps, !Ref Env, ServerDomain]
+      DomainValidationOptions:
+        - DomainName: !FindInMap [EnvMaps, !Ref Env, ServerDomain]
+          HostedZoneId: !Ref 'HostedZoneId'
+      ValidationMethod: DNS
+
+  SourceClientDomainAcmCertificate:
+    Type: AWS::CertificateManager::Certificate
+    Condition: IsNotProduction  # For now don't deploy client for beta
+    Properties:
+      DomainName: !FindInMap [EnvMaps, !Ref Env, ClientDomain]
+      DomainValidationOptions:
+        - DomainName: !FindInMap [EnvMaps, !Ref Env, ClientDomain]
+          HostedZoneId: !Ref 'HostedZoneId'
+      ValidationMethod: DNS
+
+  SourceServerDomainDistribution:
+    Type: AWS::CloudFront::Distribution
+    Properties:
+      DistributionConfig:
+        Comment: !Join
+          - ' '
+          - - 'Redirect from'
+            - !FindInMap [EnvMaps, !Ref Env, ServerDomain]
+            - 'to'
+            - !FindInMap [EnvMaps, !Ref Env, NewServerDomain]
+        Aliases:
+          - !FindInMap [EnvMaps, !Ref Env, ServerDomain]
+        DefaultCacheBehavior:
+          ForwardedValues:
+            QueryString: true
+          MinTTL: '0'
+          MaxTTL: '3600'
+          DefaultTTL: '3600'
+          SmoothStreaming: false
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: allow-all
+        Enabled: true
+        HttpVersion: 'http2'
+        Origins:
+          - DomainName: !Select [2, !Split ["/", !GetAtt SourceServerDomainRedirectBucket.WebsiteURL]]
+            Id: S3Origin
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: http-only
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SourceServerDomainAcmCertificate
+          SslSupportMethod: sni-only
+
+  SourceClientDomainDistribution:
+    Type: AWS::CloudFront::Distribution
+    Condition: IsNotProduction  # For now don't deploy client for beta
+    Properties:
+      DistributionConfig:
+        Comment: !Join
+          - ' '
+          - - 'Redirect from'
+            - !FindInMap [EnvMaps, !Ref Env, ClientDomain]
+            - 'to'
+            - !FindInMap [EnvMaps, !Ref Env, NewClientDomain]
+        Aliases:
+          - !FindInMap [EnvMaps, !Ref Env, ClientDomain]
+        DefaultCacheBehavior:
+          ForwardedValues:
+            QueryString: true
+          MinTTL: '0'
+          MaxTTL: '3600'
+          DefaultTTL: '3600'
+          SmoothStreaming: false
+          TargetOriginId: S3Origin
+          ViewerProtocolPolicy: allow-all
+        Enabled: true
+        HttpVersion: 'http2'
+        Origins:
+          - DomainName: !Select [2, !Split ["/", !GetAtt SourceClientDomainRedirectBucket.WebsiteURL]]
+            Id: S3Origin
+            CustomOriginConfig:
+              HTTPPort: '80'
+              HTTPSPort: '443'
+              OriginProtocolPolicy: http-only
+        PriceClass: PriceClass_100
+        ViewerCertificate:
+          AcmCertificateArn: !Ref SourceClientDomainAcmCertificate
+          SslSupportMethod: sni-only
+
+  SourceServerDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref 'HostedZoneId'
+      Name: !FindInMap [EnvMaps, !Ref Env, ServerDomain]
+      Type: CNAME
+      TTL: '900'
+      ResourceRecords:
+        - !GetAtt [SourceServerDomainDistribution, DomainName]
+
+  SourceClientDNSRecord:
+    Type: AWS::Route53::RecordSet
+    Condition: IsNotProduction  # For now don't deploy client for beta
+    Properties:
+      HostedZoneId: !Ref 'HostedZoneId'
+      Name: !FindInMap [EnvMaps, !Ref Env, ClientDomain]
+      Type: CNAME
+      TTL: '900'
+      ResourceRecords:
+        - !GetAtt [SourceClientDomainDistribution, DomainName]
