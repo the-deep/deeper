@@ -13,7 +13,7 @@ Mappings:
   ScalingCapacity:
     prod:
       MinCapacity: 1
-      MaxCapacity: 1  # TODO: Increase this
+      MaxCapacity: 4
     staging:
       MinCapacity: 1
       MaxCapacity: 3

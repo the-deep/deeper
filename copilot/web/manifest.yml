@@ -62,14 +62,9 @@ environments:
       spot: 1
 
   prod:
-    cpu: 1024
-    memory: 8192
-
     http:
       alias: prod-api.thedeep.io
     count:
-      spot: 1
-    # count:  TODO: USE this
-    #   range: 1-4
-    #   requests: 1000
-    #   spot_from: 2
+      range: 2-4
+      requests: 1000
+      spot_from: 2
