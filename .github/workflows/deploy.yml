@@ -105,6 +105,7 @@ jobs:
           REACT_APP_ASSESSMENT_VIZ_URL: https://the-deep.github.io/deepviz-assessments/
           REACT_APP_ENTRY_VIZ_URL: https://the-deep.github.io/deepviz-entries/
           # Chrome extension
+          REACT_APP_OLD_BROWSER_EXTENSION_ID: kafonkgglonkbldmcigbdojiadfcmcdc
           REACT_APP_BROWSER_EXTENSION_ID: hkmakfhfikfhllpkfpkkaoonapclfajf
           # Mapbox # FIXME: Make sure to use valid token for deep domain.
           REACT_APP_MAPBOX_STYLE: mapbox://styles/deepmapz/cjc8oth8775tu2sr0eeymm3qv
