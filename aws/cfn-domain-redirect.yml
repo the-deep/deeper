@@ -25,12 +25,6 @@ Mappings:
       SourceServerRedirectBucketName: deep-beta-to-prod-server-redirect
       SourceClientRedirectBucketName: deep-beta-to-prod-client-redirect
 
-Conditions:
-  IsProduction:
-    !Equals [!Ref Env, prod]
-  IsNotProduction:
-    !Not [Condition: IsProduction]
-
 Resources:
   SourceServerDomainRedirectBucket:
     Type: AWS::S3::Bucket
@@ -44,7 +38,6 @@ Resources:
 
   SourceClientDomainRedirectBucket:
     Type: AWS::S3::Bucket
-    Condition: IsNotProduction  # For now don't deploy client for beta
     Properties:
       BucketName: !FindInMap [EnvMaps, !Ref Env, SourceClientRedirectBucketName]
       AccessControl: PublicRead
@@ -64,7 +57,6 @@ Resources:
 
   SourceClientDomainAcmCertificate:
     Type: AWS::CertificateManager::Certificate
-    Condition: IsNotProduction  # For now don't deploy client for beta
     Properties:
       DomainName: !FindInMap [EnvMaps, !Ref Env, ClientDomain]
       DomainValidationOptions:
@@ -109,7 +101,6 @@ Resources:
 
   SourceClientDomainDistribution:
     Type: AWS::CloudFront::Distribution
-    Condition: IsNotProduction  # For now don't deploy client for beta
     Properties:
       DistributionConfig:
         Comment: !Join
@@ -155,7 +146,6 @@ Resources:
 
   SourceClientDNSRecord:
     Type: AWS::Route53::RecordSet
-    Condition: IsNotProduction  # For now don't deploy client for beta
     Properties:
       HostedZoneId: !Ref 'HostedZoneId'
       Name: !FindInMap [EnvMaps, !Ref Env, ClientDomain]
