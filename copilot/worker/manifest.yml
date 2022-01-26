@@ -62,3 +62,7 @@ environments:
   staging:
     count:
       spot: 1
+
+  prod:
+    logging:
+      retention: 90

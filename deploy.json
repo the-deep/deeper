@@ -14,6 +14,6 @@
     "server": {
         "repo": "https://github.com/the-deep/server",
         "branch": "release-v2.0.1",
-        "deploy": true
+        "deploy": false
     }
 }

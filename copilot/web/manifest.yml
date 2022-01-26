@@ -64,7 +64,11 @@ environments:
   prod:
     http:
       alias: prod-api.thedeep.io
+
     count:
       range: 2-4
       requests: 1000
       spot_from: 2
+
+    logging:
+      retention: 90
