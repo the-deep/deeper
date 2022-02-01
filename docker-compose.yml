@@ -68,6 +68,19 @@ services:
       timeout: 5s
       retries: 5
 
+  extractor:
+    image: deepl_extractor_entry_predictor
+    command: bash -c '/code/scripts/run_develop.sh'
+    volumes:
+       - ./deepl-service/:/code
+    tty: true
+    env_file:
+      - .env
+    ports:
+      - '8001:8001'
+    depends_on:
+      - redis
+
   web:
     <<: *base_server_setup
     image: docker.pkg.github.com/the-deep/server/web:latest
@@ -80,6 +93,8 @@ services:
     command: bash -c 'wait-for-it $$DATABASE_HOST:$$DATABASE_PORT && /code/scripts/run_web.sh'
     ports:
       - '8000:8000'
+    depends_on:
+      - extractor
 
   worker:
     <<: *base_server_setup
