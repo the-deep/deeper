@@ -23,9 +23,12 @@ git clone https://github.com/the-deep/deeper.git deep-project-root
 cd deep-project-root
 
 # Clone client and server
-git clone https://github.com/the-deep/server.git
-git clone https://github.com/the-deep/client.git
+git clone https://github.com/the-deep/server.git server
+
+git clone https://github.com/the-deep/client.git client
 git clone --branch=feature/only-ary https://github.com/the-deep/client.git ./ary-only-client
+
+git clone https://github.com/the-deep/deepl-deep-integration.git deepl-service
 
 # Setup client
 cd client
@@ -45,6 +48,14 @@ cp .env-sample .env
 docker-compose pull
 docker-compose build
 ```
+
+#### NOTE: For deepl-service extractor
+- Make sure you have read access to https://github.com/the-deep/deepl-pdf-extraction
+- Have github ssh setup. https://docs.github.com/en/authentication/connecting-to-github-with-ssh
+- Run this command to generate extractor docker image. For every new change in https://github.com/the-deep/deepl-deep-integration.git this is required.
+    ```bash
+    ./setup-deepl-service.sh ~/.ssh/<github-key-path>
+    ```
 
 ## Useful commands for running Docker
 

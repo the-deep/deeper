@@ -25,16 +25,3 @@ If you are interested in contributing, please checkout the information below and
 
 ## Copilot Deployment
 - [Deployment](docs/Deployment.md)
-
-
-## Prerequisites
-Create deepl-service folder and clone this github repository
-[Deepl text extractor](https://github.com/the-deep/deepl-deep-integration).
-
-## Deepl Service Setup
-- Clone deepl repo under deepl-service directory
-- Edit SSH_PRIVATE_KEY_PATH path in deepl-service/script/deepl_setup.sh
-- Execute deepl_setup script
-````
-./deepl-service/script/deepl_setup.sh
-````
