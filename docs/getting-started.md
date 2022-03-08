@@ -49,14 +49,6 @@ docker-compose pull
 docker-compose build
 ```
 
-#### NOTE: For deepl-service extractor
-- Make sure you have read access to https://github.com/the-deep/deepl-pdf-extraction
-- Have github ssh setup. https://docs.github.com/en/authentication/connecting-to-github-with-ssh
-- Run this command to generate extractor docker image. For every new change in https://github.com/the-deep/deepl-deep-integration.git this is required.
-    ```bash
-    ./setup-deepl-service.sh ~/.ssh/<github-key-path>
-    ```
-
 ## Useful commands for running Docker
 
 - Starting docker containers
