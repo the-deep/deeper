@@ -155,3 +155,4 @@ deploy/nginx/config/
 client/
 server/
 deepl-service/
+ary-only-client/
