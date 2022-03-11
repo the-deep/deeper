@@ -62,6 +62,9 @@ environments:
       spot: 1
 
   prod:
+    cpu: 2048
+    memory: 4096
+
     http:
       alias: prod-api.thedeep.io
 
