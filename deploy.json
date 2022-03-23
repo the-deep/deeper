@@ -1,8 +1,8 @@
 {
     "client": {
         "repo": "https://github.com/the-deep/client",
-        "branch": "release-v2.0.8",
-        "deploy": false
+        "branch": "release-v2.0.9",
+        "deploy": true
     },
     "ary_client": {
         "repo": "https://github.com/the-deep/client",
