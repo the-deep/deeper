@@ -109,6 +109,7 @@ services:
       REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:8000/graphql}
       REACT_APP_API_END: ${REACT_APP_API_END:-localhost:8000}
       REACT_APP_ADMIN_END: ${REACT_APP_ADMIN_END:-localhost:8000}
+      REACT_APP_PDF_CACHE_ENDPOINT: ${REACT_APP_PDF_CACHE_ENDPOINT:-https://snapshot-proxy.thedeep.io}
       REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
     env_file:
       - .env
