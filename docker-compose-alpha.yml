@@ -1,0 +1,160 @@
+version: '3.2'
+
+x-server: &base_server_setup
+  build:
+    context: ./server/
+  # To attach to container with stdin `docker attach <container_name>`
+  # Used for python debugging.
+  stdin_open: true
+  tty: true
+  environment: &base_server_environment
+    # To overwrite this values. set the values in .env
+    DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+    DEEP_ENVIRONMENT: ${DEEP_ENVIRONMENT:-development}
+    DEEP_FRONTEND_HOST: ${DEEP_FRONTEND_HOST:-localhost:3000}
+    DEEP_FRONTEND_ARY_HOST: ${DEEP_FRONTEND_ARY_HOST:-localhost:3001}
+    DEEP_BACKEND_HOST: ${DEEP_BACKEND_HOST:-localhost:8000}
+    DJANGO_ALLOWED_HOST: ${DJANGO_ALLOWED_HOST:-localhost}
+    SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-localhost}
+    CSRF_COOKIE_DOMAIN: ${CSRF_COOKIE_DOMAIN:-localhost}
+    EMAIL_FROM: ${EMAIL_FROM:-dev@thedeep.io}
+    # From db.environment
+    DATABASE_NAME: ${DATABASE_NAME:-deep}
+    DATABASE_USER: ${DATABASE_USER:-postgres}
+    DATABASE_PASSWORD: ${DATABASE_PASSWORD:-postgres}
+    DATABASE_PORT: ${DATABASE_PORT:-5432}
+    DATABASE_HOST: ${DATABASE_HOST:-db}
+    # From redis
+    CELERY_REDIS_URL: ${CELERY_REDIS_URL:-redis://redis:6379/0}
+    DJANGO_CACHE_REDIS_URL: ${DJANGO_CACHE_REDIS_URL:-redis://redis:6379/2}
+    # HID
+    HID_CLIENT_ID: ${HID_CLIENT_ID:-deep-local}
+    HID_CLIENT_REDIRECT_URL: ${HID_CLIENT_REDIRECT_URL:-http://localhost:3000/login/}
+    HID_AUTH_URI: ${HID_AUTH_URI:-https://api2.dev.humanitarian.id}
+  env_file:
+    - .env
+  restart: unless-stopped
+  volumes:
+    - ./server/:/code
+    - server-media:/media
+    - server-static:/static
+
+x-client: &base_client_setup
+  tty: true
+  environment:
+    # To overwrite this values. set the values in .env
+    GRAPHQL_CODEGEN_ENDPOINT: ${GRAPHQL_CODEGEN_ENDPOINT:-http://web:8000/graphql}
+    REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:8000/graphql}
+    REACT_APP_API_END: ${REACT_APP_API_END:-localhost:8000}
+    REACT_APP_ADMIN_END: ${REACT_APP_ADMIN_END:-localhost:8000}
+    REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
+  env_file:
+    - .env
+  command: bash -c 'yarn install && yarn build && cp -r ./build/* /build/'
+
+
+services:
+  db:
+    image: postgis/postgis:13-3.1-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: deep
+    volumes:
+      - postgres-data13:/var/lib/postgresql/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:6-alpine
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  web:
+    <<: *base_server_setup
+    image: docker.pkg.github.com/the-deep/server/web:latest
+    build:
+      context: ./server/
+      target: web
+    environment:
+      <<: *base_server_environment
+      SERVICE_ENVIRONMENT_TYPE: web
+    command: bash -c 'wait-for-it $$DATABASE_HOST:$$DATABASE_PORT && /code/scripts/run_web.sh'
+
+  worker:
+    <<: *base_server_setup
+    image: docker.pkg.github.com/the-deep/server/worker:latest
+    build:
+      context: ./server/
+      target: worker
+    environment:
+      <<: *base_server_environment
+      SERVICE_ENVIRONMENT_TYPE: worker
+    command: bash -c '/code/scripts/run_worker.sh'
+    healthcheck:
+      test: ["CMD-SHELL", "celery -A deep inspect ping -d celery@$$HOSTNAME || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  client:
+    <<: *base_client_setup
+    image: docker.pkg.github.com/the-deep/client:latest
+    build:
+      context: ./client/
+    volumes:
+      - ./client/:/code
+      - client-static:/build/
+
+  ary-client:
+    <<: *base_client_setup
+    image: docker.pkg.github.com/the-deep/client:ary-only
+    build:
+      context: ./ary-only-client/
+    volumes:
+      - ./ary-only-client/:/code
+      - client-ary-static:/build/
+
+  nginx:
+    image: nginx:1.21
+    user: root
+    volumes:
+      # Nginx config
+      - ./nginx.alpha.conf.template:/etc/nginx/templates/default.conf.template:ro
+      # Static files
+      - client-static:/app-assests/client-static:ro
+      - client-ary-static:/app-assests/client-ary-static:ro
+      - server-static:/app-assests/server-static:ro
+      # Media files
+      - server-media:/app-assests/server-media:ro
+      # Cert
+      - ./nginx-certs:/nginx-certs
+    restart: unless-stopped
+    environment:
+      - NGINX_SERVER_HOST=${DEEP_BACKEND_HOST}
+      - NGINX_CLIENT_HOST=${DEEP_FRONTEND_HOST}
+      - NGINX_CLIENT_ARY_HOST=${DEEP_FRONTEND_ARY_HOST}
+    ports:
+      - '8001:443'
+    # depends_on:
+    #   - web
+
+volumes:
+  postgres-data:
+  postgres-data13:
+  redis-data:
+  client-static:
+  client-ary-static:
+  server-static:
+  server-media:
