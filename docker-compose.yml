@@ -43,6 +43,20 @@ x-server: &base_server_setup
     redis:
       condition: service_healthy
 
+x-client: &base_client_setup
+  tty: true
+  environment:
+    # To overwrite this values. set the values in .env
+    GRAPHQL_CODEGEN_ENDPOINT: ${GRAPHQL_CODEGEN_ENDPOINT:-http://web:8000/graphql}
+    REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:8000/graphql}
+    REACT_APP_API_END: ${REACT_APP_API_END:-localhost:8000}
+    REACT_APP_ADMIN_END: ${REACT_APP_ADMIN_END:-localhost:8000}
+    REACT_APP_PDF_CACHE_ENDPOINT: ${REACT_APP_PDF_CACHE_ENDPOINT:-https://snapshot-proxy.thedeep.io}
+    REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
+  env_file:
+    - .env
+  command: bash -c '/code/scripts/run_develop.sh'
+
 services:
   db:
     image: postgis/postgis:13-3.1-alpine
@@ -97,6 +111,26 @@ services:
       timeout: 5s
       retries: 3
       start_period: 30s
+
+  client:
+    <<: *base_client_setup
+    image: docker.pkg.github.com/the-deep/client:latest
+    build:
+      context: ./client/
+    volumes:
+      - ./client/:/code
+    ports:
+      - '3000:3000'
+
+  ary-client:
+    <<: *base_client_setup
+    image: docker.pkg.github.com/the-deep/ary-only-client:latest
+    build:
+      context: ./ary-only-client/
+    volumes:
+      - ./ary-only-client/:/code
+    ports:
+      - '3001:3000'
 
   client:
     image: docker.pkg.github.com/the-deep/client:latest
