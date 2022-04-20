@@ -25,10 +25,10 @@ cd deep-project-root
 # Clone client and server
 git clone https://github.com/the-deep/server.git
 git clone https://github.com/the-deep/client.git
+git clone --branch=feature/only-ary https://github.com/the-deep/client.git ./ary-only-client
 
 # Setup client
 cd client
-yarn vendor:clone
 ```
 
 
@@ -40,6 +40,8 @@ And run the following commands every time dependencies are updated.
 ```bash
 cd deep-project-root
 
+# Copy ./env-sample as .env
+cp .env-sample .env
 docker-compose pull
 docker-compose build
 ```
@@ -52,33 +54,39 @@ docker-compose build
     docker-compose up               # non-detached mode, shows logs, ctrl+c to exit
     docker-compose up -d            # detached mode, runs in background
     ```
+- Running django migrations
+    ```bash
+    docker-compose exec web ./manage.py migrate
+    ```
+
 - Viewing logs (for detached mode)
 
     ```bash
     docker-compose logs -f          # view logs -f is for flow
-    docker-compose logs -f server      # view logs for server container
+    docker-compose logs -f web      # view logs for web container
+    docker-compose logs -f worker      # view logs for worker container
     ```
 
 - Running commands
 
     ```bash
-    docker-compose exec server <command>    # Run commands inside server container
-    docker-compose exec server bash         # Get into server container's bash
+    docker-compose exec web <command>    # Run commands inside web container
+    docker-compose exec web bash         # Get into web container's bash
     ```
 
-[Note: `server` is the container name (view `docker-compose.yml`)]
+[Note: `web` is the container name (view `docker-compose.yml`)]
 
 ## Useful Plugins for Debugging React
 
 - [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
 - [Redux DevTools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
 
-## Adding dependencies [Server]
+## Adding dependencies [web]
 
-- Get into server container bash
+- Get into web container bash
 
     ```bash
-    docker-compose exec server bash
+    docker-compose exec web bash
     ```
 
 - Adding Server Dependencies [Python]
@@ -115,9 +123,9 @@ docker-compose build
 
 - Python/Django tests
     ```bash
-    docker-compose exec server bash
+    docker-compose exec web bash
 
-    # Inside server container
+    # Inside web container
     . /venv/bin/activate
     cd /code/
     python3 manage.py test                      # Dango tests
