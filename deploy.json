@@ -2,11 +2,11 @@
     "client": {
         "repo": "https://github.com/the-deep/client",
         "branch": "release-v2.0.16",
-        "deploy": true
+        "deploy": false
     },
     "ary_client": {
         "repo": "https://github.com/the-deep/client",
-        "branch": "release-only-ary-v1.0.1",
+        "branch": "release-only-ary-v1.0.2",
         "react_store_repo": "https://github.com/toggle-corp/react-store",
         "react_store_branch": "72a9230716d9eebdb4c506d99b64cebe6031b45c",
         "deploy": true
