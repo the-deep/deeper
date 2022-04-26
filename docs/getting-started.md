@@ -23,9 +23,12 @@ git clone https://github.com/the-deep/deeper.git deep-project-root
 cd deep-project-root
 
 # Clone client and server
-git clone https://github.com/the-deep/server.git
-git clone https://github.com/the-deep/client.git
+git clone https://github.com/the-deep/server.git server
+
+git clone https://github.com/the-deep/client.git client
 git clone --branch=feature/only-ary https://github.com/the-deep/client.git ./ary-only-client
+
+git clone https://github.com/the-deep/deepl-deep-integration.git deepl-service
 
 # Setup client
 cd client

@@ -32,11 +32,15 @@ x-server: &base_server_setup
     HID_CLIENT_ID: ${HID_CLIENT_ID:-deep-local}
     HID_CLIENT_REDIRECT_URL: ${HID_CLIENT_REDIRECT_URL:-http://localhost:3000/login/}
     HID_AUTH_URI: ${HID_AUTH_URI:-https://api2.dev.humanitarian.id}
+    # DEEPL Service
+    DEEPL_SERVICE_DOMAIN: http://extractor:8001
+    DEEPL_SERVICE_CALLBACK_DOMAIN: http://web:8000
   env_file:
     - .env
   volumes:
     - ./server/:/code
     - media:/media
+    - ipython_data_local:/root/.ipython/profile_default   # persist ipython data, including ipython history
   depends_on:
     db:
       condition: service_healthy
@@ -94,6 +98,8 @@ services:
     command: bash -c 'wait-for-it $$DATABASE_HOST:$$DATABASE_PORT && /code/scripts/run_web.sh'
     ports:
       - '8000:8000'
+    depends_on:
+      - extractor
 
   worker:
     <<: *base_server_setup
@@ -154,7 +160,22 @@ services:
       - '3000:3000'
       - '5000:5000'
 
+  extractor:
+    image: docker.pkg.github.com/the-deep/deepl-service:latest
+    build:
+      context: ./deepl-service/
+    command: bash -c '/code/scripts/run_develop.sh'
+    tty: true
+    environment:
+      EXTRACTOR_DOMAIN_NAME: ${EXTRACTOR_DOMAIN_NAME:-http://extractor:8001}
+      EXTRACTOR_REDIS_URL: ${EXTRACTOR_REDIS_URL:-redis://redis:6379/3}
+    volumes:
+       - ./deepl-service/:/code
+    depends_on:
+      - redis
+
 volumes:
   media:
   postgres-data13:
   redis-data:
+  ipython_data_local:

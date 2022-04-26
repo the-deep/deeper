@@ -154,3 +154,5 @@ deploy/nginx/config/
 # Ref repo
 client/
 server/
+deepl-service/
+ary-only-client/
