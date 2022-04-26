@@ -40,6 +40,7 @@ x-server: &base_server_setup
   volumes:
     - ./server/:/code
     - media:/media
+    - ipython_data_local:/root/.ipython/profile_default   # persist ipython data, including ipython history
   depends_on:
     db:
       condition: service_healthy
@@ -177,3 +178,4 @@ volumes:
   media:
   postgres-data13:
   redis-data:
+  ipython_data_local:
