@@ -63,7 +63,8 @@ Resources:
               - secretsmanager:ListSecretVersionIds,
               - secretsmanager:ListSecrets
             Resource:
-              Fn::ImportValue: !Sub '${App}-${Env}-DatabaseSecret'
+              - Fn::ImportValue: !Sub '${App}-${Env}-DatabaseSecret'
+              - Fn::ImportValue: !Sub '${App}-${Env}-S3AccessUserSecret'
           - Sid: CloudWatchMetricUpdateAccess
             Effect: Allow
             Action:
@@ -95,6 +96,12 @@ Outputs:
     Value:
       Fn::ImportValue:
         !Sub ${App}-${Env}-DatabaseSecret
+
+  # From web/addons/s3-user.yml (This will inject DEEP_BUCKET_ACCESS_USER_SECRET_ARN)
+  DeepBucketAccessUserSecretArn:
+    Value:
+      Fn::ImportValue:
+        !Sub ${App}-${Env}-S3AccessUserSecret
 
   # From web/addons/s3-static.yml
   AwsStorageBucketNameStatic:

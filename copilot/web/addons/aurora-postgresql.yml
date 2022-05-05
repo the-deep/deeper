@@ -135,14 +135,6 @@ Resources:
         IncludeSpace: false
         PasswordLength: 16
 
-  # NOTE: this ssm bears the ARN for db secret, for worker service
-  DatabaseSecretParam:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !Sub /copilot/${App}/${Env}/secrets/DEEP_DATABASE_SECRET_ARN
-      Type: String
-      Value: !Ref DatabaseSecret
-
   DatabaseDBClusterParameterGroup:
     Metadata:
       'aws:copilot:description': 'A DB parameter group for engine configuration values'

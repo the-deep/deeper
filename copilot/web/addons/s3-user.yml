@@ -33,8 +33,9 @@ Resources:
       Description: !Sub '${App} ${Env} access key for web services.'
       SecretString: !Sub '{"AccessKeyId":"${S3AccessUserKey}","SecretAccessKey":"${S3AccessUserKey.SecretAccessKey}"}'
 
-
 Outputs:
   DeepBucketAccessUserSecret: # injected as DEEP_BUCKET_ACCESS_USER_SECRET environment variable by Copilot.
     Description: "The JSON secret that holds the IAM access keys. Fields are 'AccessKeyId', 'SecretAccessKey'"
     Value: !Ref S3AccessUserKeySecret
+    Export:
+      Name: !Sub ${App}-${Env}-S3AccessUserSecret
