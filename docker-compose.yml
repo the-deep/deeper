@@ -42,10 +42,9 @@ x-server: &base_server_setup
     - media:/media
     - ipython_data_local:/root/.ipython/profile_default   # persist ipython data, including ipython history
   depends_on:
-    db:
-      condition: service_healthy
-    redis:
-      condition: service_healthy
+      - db
+      - redis
+      - extractor
 
 x-client: &base_client_setup
   tty: true
@@ -98,8 +97,6 @@ services:
     command: bash -c 'wait-for-it $$DATABASE_HOST:$$DATABASE_PORT && /code/scripts/run_web.sh'
     ports:
       - '8000:8000'
-    depends_on:
-      - extractor
 
   worker:
     <<: *base_server_setup
@@ -151,6 +148,7 @@ services:
       REACT_APP_ADMIN_END: ${REACT_APP_ADMIN_END:-localhost:8000}
       REACT_APP_PDF_CACHE_ENDPOINT: ${REACT_APP_PDF_CACHE_ENDPOINT:-https://snapshot-proxy.thedeep.io}
       REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
+      REACT_APP_ASSESSMENT_REGISTRY_END: ${REACT_APP_ASSESSMENT_REGISTRY_END:-http://localhost:3001}
     env_file:
       - .env
     command: bash -c '/code/scripts/run_develop.sh'

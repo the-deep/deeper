@@ -48,19 +48,18 @@ phases:
       - docker build -t $DOCKER_IMAGE_SERVER --cache-from $DOCKER_IMAGE_SERVER ./server
       - echo "[Server] Running tests"
       - |
-          docker-compose -f ./server/gh-docker-compose.yml run --rm server wait-for-it db:5432 &&
-          docker-compose -f ./server/gh-docker-compose.yml run --rm server ./manage.py graphql_schema --out /ci-share/schema-latest.graphql &&
+          docker-compose -f ./server/gh-docker-compose.yml run --rm server bash -c 'wait-for-it db:5432 && ./manage.py graphql_schema --out /ci-share/schema-latest.graphql' &&
           cmp --silent ./server/schema.graphql ./server/ci-share/schema-latest.graphql || {
             echo 'The schema.graphql is not up to date with the latest changes. Please update and push latest';
             diff ./server/schema.graphql ./server/ci-share/schema-latest.graphql;
             exit 1;
           }
       - |
-          docker-compose -f ./server/gh-docker-compose.yml run --rm server python3 manage.py makemigrations --check --dry-run || {
+          docker-compose -f ./server/gh-docker-compose.yml run --rm server bash -c 'wait-for-it db:5432 && ./manage.py makemigrations --check --dry-run' || {
             echo 'There are some changes to be reflected in the migration. Make sure to run makemigrations';
             exit 1;
           }
-      - docker-compose -f ./server/gh-docker-compose.yml run --rm server /code/scripts/run_tests.sh
+      - docker-compose -f ./server/gh-docker-compose.yml run --rm server bash -c 'wait-for-it db:5432 && /code/scripts/run_tests.sh'
       - echo "[Server] Pushing builder image"
       - aws ecr get-login-password --region $region | docker login --username AWS --password-stdin $DOCKER_IMAGE_SERVER_DOMAIN
       - docker push $DOCKER_IMAGE_SERVER
