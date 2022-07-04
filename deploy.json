@@ -6,14 +6,14 @@
     },
     "ary_client": {
         "repo": "https://github.com/the-deep/client",
-        "branch": "release-only-ary-v1.0.5",
+        "branch": "release-only-ary-v1.1.0",
         "react_store_repo": "https://github.com/toggle-corp/react-store",
         "react_store_branch": "72a9230716d9eebdb4c506d99b64cebe6031b45c",
-        "deploy": false
+        "deploy": true
     },
     "server": {
         "repo": "https://github.com/the-deep/server",
         "branch": "release-v2.1.23",
-        "deploy": true
+        "deploy": false
     }
 }
