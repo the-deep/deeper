@@ -13,7 +13,7 @@
     },
     "server": {
         "repo": "https://github.com/the-deep/server",
-        "branch": "release-v2.1.25",
+        "branch": "release-v2.1.26",
         "deploy": true
     }
 }
