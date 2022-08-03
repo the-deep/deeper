@@ -69,6 +69,8 @@ environments:
   prod:
     cpu: 2048
     memory: 16384
+    storage:
+      ephemeral: 100
 
     logging:
       retention: 180
