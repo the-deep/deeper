@@ -23,9 +23,9 @@ jobs:
           DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${SUB_MODULES_DEP_FILE}`
           DEEP_CLIENT_REPO=`jq -r '.client.repo' ${SUB_MODULES_DEP_FILE}`
           DEEP_CLIENT_BRANCH=`jq -r '.client.branch' ${SUB_MODULES_DEP_FILE}`
-          echo ::set-output name=deploy::${DEEP_CLIENT_DEPLOY}
-          echo ::set-output name=branch::${DEEP_CLIENT_BRANCH}
-          echo ::set-output name=repo::${DEEP_CLIENT_REPO#https://github.com/}
+          echo "deploy=${DEEP_CLIENT_DEPLOY}" >> $GITHUB_OUTPUT
+          echo "branch=${DEEP_CLIENT_BRANCH}" >> $GITHUB_OUTPUT
+          echo "repo=${DEEP_CLIENT_REPO#https://github.com/}" >> $GITHUB_OUTPUT
 
   test_build:
     name: Lint + Test + Build
@@ -45,8 +45,8 @@ jobs:
         run: |
           TAG=$(echo $GITHUB_SHA | head -c7)
           IMAGE="docker.pkg.github.com/the-deep/client"
-          echo ::set-output name=tagged_image::${IMAGE}:${TAG}
-          echo ::set-output name=tag::${TAG}
+          echo "tagged_image=${IMAGE}:${TAG}" >> $GITHUB_OUTPUT
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
       - name: 🐳 Set up Docker Buildx
         id: buildx
         uses: docker/setup-buildx-action@master
