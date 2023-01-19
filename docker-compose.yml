@@ -58,6 +58,7 @@ x-client: &base_client_setup
     REACT_APP_PDF_CACHE_ENDPOINT: ${REACT_APP_PDF_CACHE_ENDPOINT:-https://snapshot-proxy.thedeep.io}
     REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
     REACT_APP_ASSESSMENT_REGISTRY_END: ${REACT_APP_ASSESSMENT_REGISTRY_END:-http://localhost:3001}
+    REACT_APP_GA_MEASUREMENT_ID: ${REACT_APP_GA_MEASUREMENT_ID}
   env_file:
     - .env
   command: bash -c '/code/scripts/run_develop.sh'
