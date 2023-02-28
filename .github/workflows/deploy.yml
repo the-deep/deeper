@@ -99,6 +99,7 @@ jobs:
           REACT_APP_API_HTTPS: https
           REACT_APP_API_END: staging-api.thedeep.io
           REACT_APP_GRAPHQL_ENDPOINT: https://staging-api.thedeep.io/graphql
+          REACT_APP_STATIC_ENDPOINT: https://deep-staging-web-addonsstack-qz1nywpr9fyp-media.s3.amazonaws.com
           REACT_APP_SERVERLESS_DOMAIN: https://services-alpha.thedeep.io
           REACT_APP_PDF_CACHE_ENDPOINT: https://snapshot-proxy.thedeep.io
           # Iframes
@@ -146,6 +147,7 @@ jobs:
           REACT_APP_API_HTTPS: https
           REACT_APP_API_END: prod-api.thedeep.io
           REACT_APP_GRAPHQL_ENDPOINT: https://prod-api.thedeep.io/graphql
+          REACT_APP_STATIC_ENDPOINT: https://deep-prod-web-addonsstack-1wxq3ye6f4n4b-media.s3.amazonaws.com
           REACT_APP_SERVERLESS_DOMAIN: https://services.thedeep.io
           REACT_APP_PDF_CACHE_ENDPOINT: https://snapshot-proxy.thedeep.io
           # Iframes
