@@ -48,6 +48,7 @@ x-client: &base_client_setup
     # To overwrite this values. set the values in .env
     GRAPHQL_CODEGEN_ENDPOINT: ${GRAPHQL_CODEGEN_ENDPOINT:-http://web:8000/graphql}
     REACT_APP_GRAPHQL_ENDPOINT: ${REACT_APP_GRAPHQL_ENDPOINT:-http://localhost:8000/graphql}
+    REACT_APP_STATIC_ENDPOINT: ${REACT_APP_STATIC_ENDPOINT:-http://localhost:8000}
     REACT_APP_API_END: ${REACT_APP_API_END:-localhost:8000}
     REACT_APP_ADMIN_END: ${REACT_APP_ADMIN_END:-localhost:8000}
     REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
