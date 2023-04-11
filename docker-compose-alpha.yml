@@ -35,6 +35,7 @@ x-server: &base_server_setup
     DEEPL_SERVICE_DOMAIN: ${DEEPL_SERVICE_DOMAIN:-http://extractor:8001}
     DEEPL_SERVICE_CALLBACK_DOMAIN: ${DEEPL_SERVICE_CALLBACK_DOMAIN:-http://web:8000}
     # DEEPL Server -> https://github.com/the-deep-nlp
+    DEEPL_SERVER_TOKEN: ${DEEPL_SERVER_TOKEN?err}
     DEEPL_SERVER_DOMAIN: ${DEEPL_SERVER_DOMAIN?err}
     DEEPL_SERVER_CALLBACK_DOMAIN: ${DEEPL_SERVER_CALLBACK_DOMAIN?err}
   env_file:
