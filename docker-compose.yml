@@ -28,13 +28,18 @@ x-server: &base_server_setup
     # From redis
     CELERY_REDIS_URL: ${CELERY_REDIS_URL:-redis://redis:6379/0}
     DJANGO_CACHE_REDIS_URL: ${DJANGO_CACHE_REDIS_URL:-redis://redis:6379/2}
+    TEST_DJANGO_CACHE_REDIS_URL: ${TEST_DJANGO_CACHE_REDIS_URL:-redis://redis:6379/12}
     # HID
     HID_CLIENT_ID: ${HID_CLIENT_ID:-deep-local}
     HID_CLIENT_REDIRECT_URL: ${HID_CLIENT_REDIRECT_URL:-http://localhost:3000/login/}
     HID_AUTH_URI: ${HID_AUTH_URI:-https://api2.dev.humanitarian.id}
     # DEEPL Service
-    DEEPL_SERVICE_DOMAIN: http://extractor:8001
-    DEEPL_SERVICE_CALLBACK_DOMAIN: http://web:8000
+    DEEPL_SERVICE_DOMAIN: ${DEEPL_SERVICE_DOMAIN:-http://extractor:8001}
+    DEEPL_SERVICE_CALLBACK_DOMAIN: ${DEEPL_SERVICE_CALLBACK_DOMAIN:-http://web:8000}
+    # DEEPL Server -> https://github.com/the-deep-nlp
+    DEEPL_SERVER_TOKEN: ${DEEPL_SERVER_TOKEN?err}
+    DEEPL_SERVER_DOMAIN: ${DEEPL_SERVER_DOMAIN?err}
+    DEEPL_SERVER_CALLBACK_DOMAIN: ${DEEPL_SERVER_CALLBACK_DOMAIN?err}
   env_file:
     - .env
   volumes:
@@ -59,7 +64,7 @@ x-client: &base_client_setup
     REACT_APP_PDF_CACHE_ENDPOINT: ${REACT_APP_PDF_CACHE_ENDPOINT:-https://snapshot-proxy.thedeep.io}
     REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
     REACT_APP_ASSESSMENT_REGISTRY_END: ${REACT_APP_ASSESSMENT_REGISTRY_END:-http://localhost:3001}
-    REACT_APP_GA_MEASUREMENT_ID: ${REACT_APP_GA_MEASUREMENT_ID}
+    REACT_APP_GA_MEASUREMENT_ID: ${REACT_APP_GA_MEASUREMENT_ID:-}
   env_file:
     - .env
   command: bash -c '/code/scripts/run_develop.sh'
