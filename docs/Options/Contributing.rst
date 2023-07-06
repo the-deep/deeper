@@ -11,12 +11,12 @@ We look forward to working with you. Here is a basic set of guidelines for contr
 
 - **Make necessary changes** to the repository taking into account the coding guidelines mentioned in the individual repositories. Some general guidelines include the use of “git rebase” to organize commits and these instructions regarding commit messages:
 
-   - Separate subjects from body with a blank line
-   - Limit the subject line to 50 characters
-   - Capitalize the subject line
-   - Do not end the subject line with a period
-   - Use the imperative mood in the subject line
-- After your work is complete, **make a Pull Request** from your repository to the-deep repository. Describe what you did in as much detail as possible. Furthermore, please link to the issue in the description.
+ - Separate subjects from body with a blank line
+ - Limit the subject line to 50 characters
+ - Capitalize the subject line
+ - Do not end the subject line with a period
+ - Use the imperative mood in the subject line
+ - After your work is complete, **make a Pull Request** from your repository to the-deep repository. Describe what you did in as much detail as possible. Furthermore, please link to the issue in the description.
 
 - Our development team will go through the pull request and merge them if they are satisfactory. They can also review the PR and ask for explanations/modifications.
 
@@ -36,15 +36,15 @@ Contributing to the Backend
 
 .. code-block:: bash
 
-    from .serializers import ProjectSerializer, ProjectMembershipSerializer
+ from .serializers import ProjectSerializer, ProjectMembershipSerializer
 
 **Do this**
 
 .. code-block:: bash
 
-    from .serializers import (
-        ProjectSerializer, ProjectMembershipSerializer
-    )
+ from .serializers import (
+     ProjectSerializer, ProjectMembershipSerializer
+ )
 
   
 **Write [unit tests](https://docs.djangoproject.com/en/1.11/topics/testing/)**
@@ -56,10 +56,9 @@ FAQ
 
  .. code-block:: bash  
 
-    - docker-compose up -d
-    - docker-compose exec web bash
-    - . /venv/bin/activate
-    - python3 backend/manage.py shell
+  - docker-compose up -d
+  - docker-compose exec web ./manage.py shell
+  
 
 Contributing to the FrontEnd
 -----------------------------
@@ -88,8 +87,6 @@ Contributing to the FrontEnd
 1. Use RestRequest for all REST api calls.
 
 2. Use Form to validate form data.
-
-3. Use RAVL to validate data from REST responses.
 
 **DEEP React Best Practices**
 

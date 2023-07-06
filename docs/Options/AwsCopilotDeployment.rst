@@ -1,11 +1,13 @@
 
-💨 Deployment
-==============
-
+💨 AwsCopilotDeployment
+==========================
+  
 Deploy custom CFN Macros (Used later for copilot addons)
 ---------------------------------------------------------
 
-aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ./aws/cfn-macros.yml --stack-name deep-custom-macros
+.. code-block:: bash 
+
+  aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ./aws/cfn-macros.yml --stack-name deep-custom-macros
 
 Create Client Stack
 ---------------------
@@ -13,14 +15,14 @@ Create Client Stack
 
 .. code-block:: bash
 
-   aws route53 list-hosted-zones-by-name --dns-name thedeep.io | jq -r '.HostedZones[0].Id' | cut -d '/' -f 3
+  aws route53 list-hosted-zones-by-name --dns-name thedeep.io | jq -r '.HostedZones[0].Id' | cut -d '/' -f 3
 
 For staging (Replace HostedZoneId with valid value)
 ----------------------------------------------------
 
 .. code-block:: bash  
 
-   aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ./aws/cfn-client.yml --stack-name deep-staging-client --tags app=deep env=staging --parameter-overrides Env=staging HostedZoneId=XXXXXXXXXXXXXXXXXXXXX
+ aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ./aws/cfn-client.yml --stack-name deep-staging-client --tags app=deep env=staging --parameter-overrides Env=staging HostedZoneId=XXXXXXXXXXXXXXXXXXXXX
 
 SES Setup
 -----------
@@ -33,8 +35,10 @@ We need DOCKERHUB authentication to pull base images.
 
 To do that make sure ssm-paramter are created. Used in `copilot/buildspec.yml`
 
-aws ssm put-parameter --name /copilot/global/DOCKERHUB_USERNAME --value <USERNAME> --type SecureString --overwrite
-aws ssm put-parameter --name /copilot/global/DOCKERHUB_TOKEN --value <TOKEN> --type SecureString --overwrite
+.. code-block:: bash  
+
+ aws ssm put-parameter --name /copilot/global/DOCKERHUB_USERNAME --value <USERNAME> --type SecureString --overwrite
+ aws ssm put-parameter --name /copilot/global/DOCKERHUB_TOKEN --value <TOKEN> --type SecureString --overwrite
 
 
 Backup account info
@@ -42,7 +46,7 @@ Backup account info
 
 .. code-block:: bash  
 
-    aws ssm put-parameter --name /copilot/global/DEEP_BACKUP_ACCOUNT_ID --value <ACCOUNT-ID> --type String --overwrite
+ aws ssm put-parameter --name /copilot/global/DEEP_BACKUP_ACCOUNT_ID --value <ACCOUNT-ID> --type String --overwrite
 
 Init
 ------
@@ -50,15 +54,20 @@ Init
 Setup app with domain thedeep.io
 ----------------------------------
 
-copilot app init deep --domain thedeep.io
+.. code-block:: bash  
+
+ copilot app init deep --domain thedeep.io
 
 Setup staging first
 ----------------------
 
-copilot env init --name staging --profile {profile} --default-config
+.. code-block:: bash  
+
+  copilot env init --name staging --profile {profile} --default-config
 
 Setup each services
 ----------------------
+.. code-block:: bash  
 
   * copilot svc init --name web
   * copilot svc init --name worker
@@ -67,6 +76,7 @@ Setup each services
 
 [Secrets](https://aws.github.io/copilot-cli/docs/commands/secret-init/)
 -------------------------------------------------------------------------
+.. code-block:: bash  
 
   * Load secrets (Sample: secrets-sample.yml)
   * copilot secret init --cli-input-yaml secrets.yml
@@ -74,11 +84,15 @@ Setup each services
 
 Deploy (Staging)
 -----------------
+.. code-block:: bash
 
-copilot svc deploy --name web --env staging
+ copilot svc deploy --name web --env staging
+
 Exec to the server
 -------------------
-copilot svc exec --name web --env staging
+.. code-block:: bash
+
+ copilot svc exec --name web --env staging
 
 -- Inside container --
 -----------------------
@@ -86,11 +100,15 @@ copilot svc exec --name web --env staging
 Initial collectstatic & migrations
 -------------------------------------
 
+.. code-block:: bash
+
   * ./manage.py collectstatic --no-input
   * ./manage.py migrate  # Or migrate data manually.
 
 
 **Before deploying worker, export-worker, we need to manually change the template for now.**
+
+.. code-block:: bash
 
   * copilot svc deploy --name worker --env staging
   * copilot svc deploy --name export-worker --env staging

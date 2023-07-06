@@ -28,7 +28,7 @@ Development of DEEP began in early 2016 and it is a collaborative project govern
    Options/Introduction
    Options/GettingStarted
    Options/Installation
-   Options/Deployment
+   Options/AwsCopilotDeployment.rst
    Options/APIReference
    Options/Testing
    Options/Contributing

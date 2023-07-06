@@ -10,8 +10,8 @@ Tests are written using django/django-rest test classes. Tests files are stored 
 
       ▾ docs/
           mixin_backend.md
-      ▾ backend/
-          ▾ project/
+      ▾ server/
+          ▾ apps/
             ▾ tests/
               __init__.py
               test_apis.py

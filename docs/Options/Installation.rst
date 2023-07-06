@@ -95,7 +95,9 @@ Useful Commands
 
 .. code-block:: shell
 
-   docker-compose exec web ./manage.py test
+   docker-compose exec web pytest  # Run all test with fresh database
+   docker-compose exec web pytest --reuse-db --last-failed -vv  # Run last failed test but reuse existing db
+   docker-compose exec web pytest apps/user/tests/test_schemas.py::TestUserSchema::test_user_last_active  # Run specific tests
 
 - To add a new package the following steps
 

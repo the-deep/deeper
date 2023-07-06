@@ -25,13 +25,8 @@ A thorough documentation of the API itself can be found at */api-docs/*.
 
 **Authentication**
 
-Authentication is done using JSON Web Tokens passed in through the HTTP authorization header.
-
-Format:
-
-.. code-block:: bash  
-
- Authorization: Bearer <JWT>
+For the core deep, client -> backend, we use session-based authentication instead.
+Most of the external clients use basic auth for now.
 
 Types of tokens
 ----------------
