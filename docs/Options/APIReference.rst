@@ -28,42 +28,6 @@ A thorough documentation of the API itself can be found at */api-docs/*.
 For the core deep, client -> backend, we use session-based authentication instead.
 Most of the external clients use basic auth for now.
 
-Types of tokens
-----------------
-
-**Access Tokens**
- 
- This is sent in all types of API requests for authorization. It is a fast authentication and doesn't check for scenarios such as if a user has changed their password. This token typically expires every hour.
-
- If an invalid or expired token is provided, a 401 error with message **"Token is invalid or expired"** is returned in the response.
-
-.. code-block:: bash 
-
-    {
-        "errorCode": 4012,
-        "errors": "Token is invalid or expired",
-        "timestamp": "2017-09-24T06:49:59.699010Z"
-    }
-
-**Refresh Tokens**
-
-This is a long lasting token, typically lasting one week. It is used to obtain new access tokens. It also performs thorough authentication before handing out new access tokens.
-
-An expired or invalid refresh token gives 400 error.
-
-.. code-block:: bash 
-
- {
-     "errorCode": 4001,
-     "errors": {
-         "nonFieldErrors": [
-             "Token is invalid or expired"
-         ]
-     },
-     "timestamp": "2017-09-24T06:49:59.699010Z"
- }
-
-
 **Response Formats**
 
 On success (200 or 201 responses), the body of the response contains the requested resource.
