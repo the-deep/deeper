@@ -12,10 +12,10 @@ Tests are written using django/django-rest test classes. Tests files are stored 
      mixin_backend.md
   ▾ server/
      ▾ apps/
-      ▾ tests/
-       __init__.py
+      ▾ users/
+       ▾ tests/
+        __init__.py
         test_apis.py
-
 
 The following is an example for testing django-rest API:
 

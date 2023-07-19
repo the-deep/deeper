@@ -15,7 +15,7 @@ Dependencies
 --------------
 
 Most of the dependencies for the deeper are provided in Dockerfile,
-package.json and requirements.txt which are installed automatically using
+package.json & pyproject.yml which are installed automatically using
 docker.
 
 Clone Deeper Repo
@@ -120,16 +120,6 @@ And run the following commands every time dependencies are updated.
 .. code-block:: bash  
 
  docker compose build  
-
-.. code-block:: bash  
-
- cd /code/
- . /venv/bin/activate                     # Activate virtualenv
- pip3 install <dependency>                # Install dependency
- pip3 freeze | grep <dependency>          # Get depedency version
- vim requirements.txt                     # Update python requirements [This will exist in next up 
- - Permanently install a dependnacy
- - `docker-compose build` after `requirements.txt` is updated
 
 ## Adding dependencies [Client]
 
