@@ -64,10 +64,6 @@ An expired or invalid refresh token gives 400 error.
  }
 
 
-Both access and refresh tokens can be obtained initially through the JWT API by passing user credentials.
-
-Examples of usage: [https://github.com/davesque/django-rest-framework-simplejwt#usage](https://github.com/davesque/django-rest-framework-simplejwt#usage)
-
 **Response Formats**
 
 On success (200 or 201 responses), the body of the response contains the requested resource.
@@ -194,6 +190,4 @@ For most types of errors like forbidden, unauthorized and not found, the interna
 
 For server errors, all except the following lists of predefined errors will have internal error code 500 by default.
 
-* 4001 : JWT refresh token is invalid or expired.
 * 4011 : User is not authenticated. Access token is required in the authorization header.
-* 4012 : JWT access token is invalid or expired.
