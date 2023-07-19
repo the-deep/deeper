@@ -7,7 +7,7 @@ Deploy custom CFN Macros (Used later for copilot addons)
 
 .. code-block:: bash 
 
-  aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ./aws/cfn-macros.yml --stack-name deep-custom-macros
+ aws cloudformation deploy --capabilities CAPABILITY_NAMED_IAM --template-file ./aws/cfn-macros.yml --stack-name deep-custom-macros
 
 Create Client Stack
 ---------------------
@@ -15,7 +15,7 @@ Create Client Stack
 
 .. code-block:: bash
 
-  aws route53 list-hosted-zones-by-name --dns-name thedeep.io | jq -r '.HostedZones[0].Id' | cut -d '/' -f 3
+ aws route53 list-hosted-zones-by-name --dns-name thedeep.io | jq -r '.HostedZones[0].Id' | cut -d '/' -f 3
 
 For staging (Replace HostedZoneId with valid value)
 ----------------------------------------------------
@@ -63,24 +63,23 @@ Setup staging first
 
 .. code-block:: bash  
 
-  copilot env init --name staging --profile {profile} --default-config
+ copilot env init --name staging --profile {profile} --default-config
 
 Setup each services
 ----------------------
 .. code-block:: bash  
 
-  * copilot svc init --name web
-  * copilot svc init --name worker
-  * copilot svc init --name export-worker
+ * copilot svc init --name web
+ * copilot svc init --name worker
+ * copilot svc init --name export-worker
 
 
 [Secrets](https://aws.github.io/copilot-cli/docs/commands/secret-init/)
 -------------------------------------------------------------------------
 .. code-block:: bash  
 
-  * Load secrets (Sample: secrets-sample.yml)
-  * copilot secret init --cli-input-yaml secrets.yml
-
+ * Load secrets (Sample: secrets-sample.yml)
+ * copilot secret init --cli-input-yaml secrets.yml
 
 Deploy (Staging)
 -----------------
@@ -102,16 +101,15 @@ Initial collectstatic & migrations
 
 .. code-block:: bash
 
-  * ./manage.py collectstatic --no-input
-  * ./manage.py migrate  # Or migrate data manually.
-
+ * ./manage.py collectstatic --no-input
+ * ./manage.py migrate  # Or migrate data manually.
 
 **Before deploying worker, export-worker, we need to manually change the template for now.**
 
 .. code-block:: bash
 
-  * copilot svc deploy --name worker --env staging
-  * copilot svc deploy --name export-worker --env staging
+ * copilot svc deploy --name worker --env staging
+ * copilot svc deploy --name export-worker --env staging
 
 Old domain to new domain redirect
 -----------------------------------
@@ -120,29 +118,29 @@ Old domain to new domain redirect
 
 .. code-block:: bash  
 
-    aws cloudformation deploy \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --template-file ./aws/cfn-domain-redirect.yml \
-    --stack-name deep-alpha-to-staging-redirect \
-    --parameter-overrides \
-        Env=staging \
-        HostedZoneId=XXXXXXXXXXXXXXXXXXXXX \
-    --tags \
-        app=deep \
-        env=staging
+ aws cloudformation deploy \
+ --capabilities CAPABILITY_NAMED_IAM \
+ --template-file ./aws/cfn-domain-redirect.yml \
+ --stack-name deep-alpha-to-staging-redirect \
+ --parameter-overrides \
+     Env=staging \
+     HostedZoneId=XXXXXXXXXXXXXXXXXXXXX \
+ --tags \
+     app=deep \
+     env=staging
 
 
 **For prod**
 
 .. code-block:: bash  
 
-    aws cloudformation deploy \
-    --capabilities CAPABILITY_NAMED_IAM \
-    --template-file ./aws/cfn-domain-redirect.yml \
-    --stack-name deep-beta-to-prod-redirect \
-    --parameter-overrides \
-        Env=prod \
-        HostedZoneId=XXXXXXXXXXXXXXXXXXXXX \
-    --tags \
-        app=deep \
-        env=prod
+ aws cloudformation deploy \
+ --capabilities CAPABILITY_NAMED_IAM \
+ --template-file ./aws/cfn-domain-redirect.yml \
+ --stack-name deep-beta-to-prod-redirect \
+ --parameter-overrides \
+     Env=prod \
+     HostedZoneId=XXXXXXXXXXXXXXXXXXXXX \
+ --tags \
+     app=deep \
+     env=prod

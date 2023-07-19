@@ -8,13 +8,13 @@ Backend
 
 Tests are written using django/django-rest test classes. Tests files are stored in the *tests* directory which lies inside each app and utils module.
 
-      ▾ docs/
-          mixin_backend.md
-      ▾ server/
-          ▾ apps/
-            ▾ tests/
-              __init__.py
-              test_apis.py
+  ▾ docs/
+     mixin_backend.md
+  ▾ server/
+     ▾ apps/
+      ▾ tests/
+       __init__.py
+        test_apis.py
 
 
 The following is an example for testing django-rest API:
@@ -27,7 +27,7 @@ from rest_framework.test import APITestCase
 from user.tests.test_apis import AuthMixin
 from project.models import Project
 
-  .. code-block:: bash  
+ .. code-block:: bash  
 
     class ProjectMixin():
         """
@@ -143,23 +143,21 @@ To test redux-connected components, one can use the `redux-mock-store`:
 
 .. code-block:: bash  
 
-    import React from 'react';
-    import { Provider } from 'react-redux';
-    import configureStore from 'redux-mock-store';
-    import { shallow } from 'enzyme';
-    import Table from '../index';
+ import React from 'react';
+ import { Provider } from 'react-redux';
+ import configureStore from 'redux-mock-store';
+ import { shallow } from 'enzyme';
+ import Table from '../index';
 
-    describe('<Table />', () => {
-        const mockStore = configureStore();
-        const store = mockStore(initialState);
-        const wrapper = shallow(<Provider store={store}><Table /></Provider>);
-
-        it('renders properly', () => {
-            expect(wrapper.length).toEqual(1);
-            expect(wrapper.prop('someProp').toEqual(initialState.someProp);
-        });
-
-    });
+ describe('<Table />', () => {
+   const mockStore = configureStore();
+   const store = mockStore(initialState);
+   const wrapper = shallow(<Provider store={store}><Table /></Provider>)   
+   it('renders properly', () => {
+       expect(wrapper.length).toEqual(1);
+       expect(wrapper.prop('someProp').toEqual(initialState.someProp);
+   });
+   });
 
 More examples using redux: [writing tests](https://github.com/reactjs/redux/blob/master/docs/recipes/WritingTests.md).
 
@@ -167,8 +165,8 @@ For event based behavioral testing, Enzyme's `simulate` can be used as helper me
 
 .. code-block:: bash  
 
-  wrapper.find('button').simulate('click');
-  expect(wrapper.find('.no-of-clicks').text()).toBe('1');
+ wrapper.find('button').simulate('click');
+ expect(wrapper.find('.no-of-clicks').text()).toBe('1');
   
 
 

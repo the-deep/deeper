@@ -25,9 +25,9 @@ git clone https://github.com/the-deep/deeper.git deep-project-root
 
 **Goto Deeper project root**
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-   cd deep-project-root
+ cd deep-project-root
 
 **Clone client and server**
 
@@ -40,53 +40,53 @@ git clone https://github.com/the-deep/deepl-deep-integration.git deepl-service
 
 **Setup client**
 
-  .. code-block:: bash     
+.. code-block:: bash     
 
-   cd client
+ cd client
 
 **Building**
 
 Install `docker` and `docker-compose v3`..
 And run the following commands every time dependencies are updated.
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-   cd deep-project-root
-   # Copy ./env-sample as .env
-   cp .env-sample .env
-   docker-compose pull
-   docker-compose build
+ cd deep-project-root
+ # Copy ./env-sample as .env
+ cp .env-sample .env
+ docker-compose pull
+ docker-compose build
 
 **Useful commands for running Docker**
 
 - Starting docker containers
 
-  .. code-block:: bash  
+.. code-block:: bash  
  
-   docker-compose up               # non-detached mode, shows logs, ctrl+c to exit
-   docker-compose up -d            # detached mode, runs in background
+  docker-compose up               # non-detached mode, shows logs, ctrl+c to exit
+  docker-compose up -d            # detached mode, runs in background
  
 - Running django migrations
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-   docker-compose exec web ./manage.py migrate
+  docker-compose exec web ./manage.py migrate
    
 
 - Viewing logs (for detached mode)
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-   docker-compose logs -f          # view logs -f is for flow
-   docker-compose logs -f web      # view logs for web container
-   docker-compose logs -f worker      # view logs for worker container
+  docker-compose logs -f          # view logs -f is for flow
+  docker-compose logs -f web      # view logs for web container
+  docker-compose logs -f worker      # view logs for worker container
   
 - Running commands
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-   docker-compose exec web <command>    # Run commands inside web container
-   docker-compose exec web bash         # Get into web container's bash
+  docker-compose exec web <command>    # Run commands inside web container
+  docker-compose exec web bash         # Get into web container's bash
    
 [Note: `web` is the container name (view `docker-compose.yml`)]
 
@@ -100,9 +100,9 @@ And run the following commands every time dependencies are updated.
 
 - Get into web container bash
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-   docker-compose exec web bash
+ docker-compose exec web bash
   
 
 - Adding Server Dependencies [Python]
@@ -111,72 +111,70 @@ And run the following commands every time dependencies are updated.
 
   Add package in pyproject.yml file
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-   Run poetry lock --no-update
+  Run poetry lock --no-update
 
   In deeper directory
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-   docker compose build  
+ docker compose build  
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-    cd /code/
-    . /venv/bin/activate                     # Activate virtualenv
-    pip3 install <dependency>                # Install dependency
-    pip3 freeze | grep <dependency>          # Get depedency version
-    vim requirements.txt                     # Update python requirements [This will exist in next up]
-
-    - Permanently install a dependnacy
-        - `docker-compose build` after `requirements.txt` is updated
+ cd /code/
+ . /venv/bin/activate                     # Activate virtualenv
+ pip3 install <dependency>                # Install dependency
+ pip3 freeze | grep <dependency>          # Get depedency version
+ vim requirements.txt                     # Update python requirements [This will exist in next up 
+ - Permanently install a dependnacy
+ - `docker-compose build` after `requirements.txt` is updated
 
 ## Adding dependencies [Client]
 
 - Get into client container bash
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-    docker-compose exec client bash
+ docker-compose exec client bash
   
-
 - Adding Client Dependencies [JS]
 
-  .. code-block:: bash  
+.. code-block:: bash  
 
-    cd code/
-    yarn add <dependency>       # Installs dependency and updates package.json and yarn.lock
+ cd code/
+ yarn add <dependency>       # Installs dependency and updates package.json and yarn.lock
 
 **Running tests locally**
 
 - Python/Django tests
 
-  .. code-block:: bash
+.. code-block:: bash
 
-    docker-compose exec web bash
-
-    **Inside web container**
+ docker-compose exec web bash
+ **Inside web container**
     
-  .. code-block:: bash
+.. code-block:: bash
 
-   docker-compose exec web pytest  # Run all test with fresh database
-   docker-compose exec web pytest --reuse-db --last-failed -vv  # Run last failed test but reuse existing db
-   docker-compose exec web pytest apps/user/tests/test_schemas.py::TestUserSchema::test_user_last_active  # Run specific tests
+ docker-compose exec web pytest  # Run all test with fresh database
+ docker-compose exec web pytest --reuse-db --last-failed -vv  # Run last failed test but reuse existing db
+ docker-compose exec web pytest apps/user/tests/test_schemas.py::TestUserSchema::test_user_last_active  # Run specific tests
 
 - JS/React test
 
-  .. code-block:: bash
+.. code-block:: bash
 
-    docker-compose exec client bash
-
-    **Inside client container**
-
-  .. code-block:: bash
-
-    cd /code/
-    yarn test                   # Provides different usages
-    yarn test a                 # Overall JS/React test
-    yarn test o                 # Test only changed files
-    yarn test --coverage        # Also generate coverage
+ docker-compose exec client bash
  
+ **Inside client container**
+
+.. code-block:: bash
+
+ cd /code/
+ yarn test                   # Provides different usages
+ yarn test a                 # Overall JS/React test
+ yarn test o                 # Test only changed files
+ yarn test --coverage        # Also generate coverage
+ 
+
