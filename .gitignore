@@ -157,3 +157,7 @@ server/
 deepl-service/
 ary-only-client/
 deep-extension/
+
+
+#readthedocs
+docs/_build
