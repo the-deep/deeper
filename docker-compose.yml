@@ -42,6 +42,8 @@ x-server: &base_server_setup
     DEEPL_SERVER_CALLBACK_DOMAIN: ${DEEPL_SERVER_CALLBACK_DOMAIN?err}
   env_file:
     - .env
+  extra_hosts:
+      - "host.docker.internal:host-gateway"
   volumes:
     - ./server/:/code
     - media:/media
@@ -65,6 +67,8 @@ x-client: &base_client_setup
     REACT_APP_DEEP_ENVIRONMENT: ${REACT_APP_DEEP_ENVIRONMENT:-development}
     REACT_APP_ASSESSMENT_REGISTRY_END: ${REACT_APP_ASSESSMENT_REGISTRY_END:-http://localhost:3001}
     REACT_APP_GA_MEASUREMENT_ID: ${REACT_APP_GA_MEASUREMENT_ID:-}
+  extra_hosts:
+      - "host.docker.internal:host-gateway"
   env_file:
     - .env
   command: bash -c '/code/scripts/run_develop.sh'

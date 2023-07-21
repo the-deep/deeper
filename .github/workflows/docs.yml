@@ -1,0 +1,54 @@
+name: Deep Docs Deployment
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+
+jobs:
+  build_docs:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - uses: actions/setup-python@master
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+          cache-dependency-path: docs/requirements.txt
+
+      - name: 🤞 Install dependencies 🧪
+        working-directory: docs
+        run: pip install -r requirements.txt
+
+      - name: 🤞 Run Build 🧪
+        working-directory: docs
+        run: make html
+
+      - name: Upload GH artifacts
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: docs/_build/html
+
+  deploy:
+    if: github.event_name == 'push'
+    name: Deploy (GH Page)
+    needs: build_docs
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+      id-token: write
+      pages: write
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages 🚀
+        uses: actions/deploy-pages@v2
+        id: deployment
