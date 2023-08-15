@@ -12,7 +12,7 @@ recommendations to the platform. Its code can be found
 If you are interested in contributing, please checkout the information below
 and post an issue if you have any questions or would like to chat.
 
-## References
+## Deep Documentation
 
 - [Deep Documentation](https://docs.thedeep.io)
 
