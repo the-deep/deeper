@@ -14,12 +14,14 @@ and post an issue if you have any questions or would like to chat.
 
 ## Deep Documentation
 
-- [Deep Documentation](https://docs.thedeep.io)
++ [Deep Documentation](https://docs.thedeep.io)
 
 ## Staging Servers
 
 - [Development website](https://alpha.thedeep.io)
 - [API](https://api.alpha.thedeep.io)
+- [Webapp](https://staging.thedeep.io)
+- [API](https://staging-api.thedeep.io)
 
 ## Copilot Deployment
 - [Deployment](docs/Deployment.md)
