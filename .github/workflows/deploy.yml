@@ -13,6 +13,8 @@ jobs:
       deploy: ${{ steps.config.outputs.deploy }}
       branch: ${{ steps.config.outputs.branch }}
       repo: ${{ steps.config.outputs.repo }}
+      deep_version: ${{ steps.config.outputs.deep_version }}
+      deep_deploy_datetime: ${{ steps.config.outputs.deep_deploy_datetime }}
     steps:
       - uses: actions/checkout@v2
 
@@ -23,9 +25,13 @@ jobs:
           DEEP_CLIENT_DEPLOY=`jq -r '.client.deploy' ${SUB_MODULES_DEP_FILE}`
           DEEP_CLIENT_REPO=`jq -r '.client.repo' ${SUB_MODULES_DEP_FILE}`
           DEEP_CLIENT_BRANCH=`jq -r '.client.branch' ${SUB_MODULES_DEP_FILE}`
+          DEEP_VERSION=`jq -r '.deep_version' ${SUB_MODULES_DEP_FILE}`
+          DEEP_DEPLOY_DATETIME=`date +'%FT%T%z'`
           echo "deploy=${DEEP_CLIENT_DEPLOY}" >> $GITHUB_OUTPUT
           echo "branch=${DEEP_CLIENT_BRANCH}" >> $GITHUB_OUTPUT
           echo "repo=${DEEP_CLIENT_REPO#https://github.com/}" >> $GITHUB_OUTPUT
+          echo "deep_version=${DEEP_VERSION}" >> $GITHUB_OUTPUT
+          echo "deep_deploy_datetime=${DEEP_DEPLOY_DATETIME}" >> $GITHUB_OUTPUT
 
   test_build:
     name: Lint + Test + Build
@@ -92,6 +98,8 @@ jobs:
       - name: Build [Staging]
         env:
           DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
+          REACT_APP_RELEASE_VERSION: ${{ needs.deploy_config.outputs.deep_version }}
+          REACT_APP_RELEASE_TIME: ${{ needs.deploy_config.outputs.deep_deploy_datetime }}
           # Misc
           REACT_APP_DEEP_ENVIRONMENT: staging
           REACT_APP_DEBUG_MODE: true
@@ -140,6 +148,8 @@ jobs:
       - name: Build [Prod]
         env:
           DOCKER_IMAGE: ${{ steps.prep.outputs.tagged_image }}
+          REACT_APP_RELEASE_VERSION: ${{ needs.deploy_config.outputs.deep_version }}
+          REACT_APP_RELEASE_TIME: ${{ needs.deploy_config.outputs.deep_deploy_datetime }}
           # Misc
           REACT_APP_DEEP_ENVIRONMENT: prod
           REACT_APP_DEBUG_MODE: false
