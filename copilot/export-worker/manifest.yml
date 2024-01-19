@@ -69,8 +69,10 @@ secrets:
 
 environments:
   staging:
-    count:
-      spot: 1
+    # count:
+    #   spot: 1
+    cpu: 2048
+    memory: 16384
 
   prod:
     cpu: 2048

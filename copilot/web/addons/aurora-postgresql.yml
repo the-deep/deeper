@@ -26,7 +26,8 @@ Mappings:
       Port: 5432
     staging:
       DBFamily: 'aurora-postgresql13'
-      DBInstanceClass: db.t4g.medium
+      # DBInstanceClass: db.t4g.medium
+      DBInstanceClass: db.r6g.large
       Engine: aurora-postgresql
       EngineVersion: '13.4'
       BackupRetentionPeriod: 7
