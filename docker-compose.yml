@@ -13,7 +13,6 @@ x-server: &base_server_setup
     DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
     DEEP_ENVIRONMENT: ${DEEP_ENVIRONMENT:-development}
     DEEP_FRONTEND_HOST: ${DEEP_FRONTEND_HOST:-localhost:3000}
-    DEEP_FRONTEND_ARY_HOST: ${DEEP_FRONTEND_ARY_HOST:-localhost:3001}
     DEEP_BACKEND_HOST: ${DEEP_BACKEND_HOST:-localhost:8000}
     DJANGO_ALLOWED_HOST: ${DJANGO_ALLOWED_HOST:-localhost}
     SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-localhost}
@@ -138,16 +137,6 @@ services:
       - ./client/:/code
     ports:
       - '3000:3000'
-
-  ary-client:
-    <<: *base_client_setup
-    image: docker.pkg.github.com/the-deep/ary-only-client:latest
-    build:
-      context: ./ary-only-client/
-    volumes:
-      - ./ary-only-client/:/code
-    ports:
-      - '3001:3000'
 
   extractor:
     image: docker.pkg.github.com/the-deep/deepl-service:latest

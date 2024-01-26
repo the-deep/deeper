@@ -35,12 +35,6 @@ To clone the client repository, use the following command:
 
  git clone https://github.com/the-deep/client.git client
 
-To clone the client repository (ARY branch), use the following command:
-
-.. code-block:: shell
-
- git clone --branch=feature/only-ary https://github.com/the-deep/client.git ./ary-only-client
-
 To clone the Deepl services repository, use the following command:
 
 .. code-block:: shell
