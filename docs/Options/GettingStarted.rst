@@ -34,7 +34,6 @@ git clone https://github.com/the-deep/deeper.git deep-project-root
 git clone https://github.com/the-deep/server.git server
 
 git clone https://github.com/the-deep/client.git client
-git clone --branch=feature/only-ary https://github.com/the-deep/client.git ./ary-only-client
 
 git clone https://github.com/the-deep/deepl-deep-integration.git deepl-service
 

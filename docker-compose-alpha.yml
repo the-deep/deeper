@@ -12,7 +12,6 @@ x-server: &base_server_setup
     DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
     DEEP_ENVIRONMENT: ${DEEP_ENVIRONMENT:-development}
     DEEP_FRONTEND_HOST: ${DEEP_FRONTEND_HOST:-localhost:3000}
-    DEEP_FRONTEND_ARY_HOST: ${DEEP_FRONTEND_ARY_HOST:-localhost:3001}
     DEEP_BACKEND_HOST: ${DEEP_BACKEND_HOST:-localhost:8000}
     DJANGO_ALLOWED_HOST: ${DJANGO_ALLOWED_HOST:-localhost}
     SESSION_COOKIE_DOMAIN: ${SESSION_COOKIE_DOMAIN:-localhost}
@@ -125,15 +124,6 @@ services:
       - ./client/:/code
       - client-static:/build/
 
-  ary-client:
-    <<: *base_client_setup
-    image: docker.pkg.github.com/the-deep/client:ary-only
-    build:
-      context: ./ary-only-client/
-    volumes:
-      - ./ary-only-client/:/code
-      - client-ary-static:/build/
-
   extractor:
     image: docker.pkg.github.com/the-deep/deepl-service:latest
     build:
@@ -156,7 +146,6 @@ services:
       - ./nginx.alpha.conf.template:/etc/nginx/templates/default.conf.template:ro
       # Static files
       - client-static:/app-assests/client-static:ro
-      - client-ary-static:/app-assests/client-ary-static:ro
       - server-static:/app-assests/server-static:ro
       # Media files
       - server-media:/app-assests/server-media:ro
@@ -166,7 +155,6 @@ services:
     environment:
       - NGINX_SERVER_HOST=${DEEP_BACKEND_HOST}
       - NGINX_CLIENT_HOST=${DEEP_FRONTEND_HOST}
-      - NGINX_CLIENT_ARY_HOST=${DEEP_FRONTEND_ARY_HOST}
     ports:
       - '8001:443'
     # depends_on:
@@ -177,6 +165,5 @@ volumes:
   postgres-data13:
   redis-data:
   client-static:
-  client-ary-static:
   server-static:
   server-media:

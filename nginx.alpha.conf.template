@@ -46,22 +46,4 @@ server {
     ssl_certificate_key /nginx-certs/server.key;
 }
 
-
-server {
-    listen 443 ssl;
-    server_name $NGINX_CLIENT_ARY_HOST;
-
-    gzip on;
-    gzip_comp_level 4;
-    gzip_types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;
-
-    location / {
-        alias /app-assests/client-ary-static/;
-        try_files $uri /index.html;
-    }
-
-    ssl_certificate /nginx-certs/server.crt;
-    ssl_certificate_key /nginx-certs/server.key;
-}
-
 # set vim: syntax=nginx
