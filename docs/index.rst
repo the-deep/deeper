@@ -34,6 +34,6 @@ Development of DEEP began in early 2016 and it is a collaborative project govern
    Options/Testing
    Options/Contributing
    Options/Changelog
- 
+   Options/Documentation
 
 
