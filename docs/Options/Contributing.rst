@@ -26,7 +26,7 @@ Contributing to the Backend
 
 **Python Coding Guidelines**
 
-- Follow [PEP 8](https://www.python.org/dev/peps/pep-0008/).
+- Follow `PEP 8 <https://www.python.org/dev/peps/pep-0008/>`_.
 
 - Use 4 spaces  . . . . never tabs.
 
@@ -46,8 +46,8 @@ Contributing to the Backend
      ProjectSerializer, ProjectMembershipSerializer
  )
 
-  
-**Write [unit tests](https://docs.djangoproject.com/en/1.11/topics/testing/)**
+ 
+Write `unit tests <https://docs.djangoproject.com/en/1.11/topics/testing/>`_
 
 FAQ
 ----

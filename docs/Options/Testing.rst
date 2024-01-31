@@ -87,11 +87,11 @@ from project.models import Project
 
 **References:**
 
-[Writing Django tests](https://docs.djangoproject.com/en/1.11/topics/testing/overview/)
+`Writing Django tests <https://docs.djangoproject.com/en/1.11/topics/testing/overview/>`_
 
-[Writing API tests](http://www.django-rest-framework.org/api-guide/testing/)
+`Writing API tests <http://www.django-rest-framework.org/api-guide/testing/>`_
 
-[Test Mixin](mixin_backend.md)
+`Test Mixin <mixin_backend.md>`_
 
 FrontEnd
 ========
@@ -159,7 +159,7 @@ To test redux-connected components, one can use the `redux-mock-store`:
    });
    });
 
-More examples using redux: [writing tests](https://github.com/reactjs/redux/blob/master/docs/recipes/WritingTests.md).
+More examples using redux: `Writing tests <https://github.com/reactjs/redux/blob/master/docs/recipes/WritingTests.md>`_.
 
 For event based behavioral testing, Enzyme's `simulate` can be used as helper method.
 

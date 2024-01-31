@@ -74,7 +74,7 @@ Setup each services
  * copilot svc init --name export-worker
 
 
-[Secrets](https://aws.github.io/copilot-cli/docs/commands/secret-init/)
+`Secrets <https://aws.github.io/copilot-cli/docs/commands/secret-init/>`_
 -------------------------------------------------------------------------
 .. code-block:: bash  
 

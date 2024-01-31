@@ -10,18 +10,18 @@ REST which we are trying to migrate from as well.
 REST Endpoints
 ------------------
 
-Rest API Endpoints can be found here  : https://prod-api.thedeep.io/api-docs/
+`Rest API Endpoints documentation <https://prod-api.thedeep.io/api-docs/>`_
 
 
 GraphQL Endpoints
 --------------------
 
-GraphQL Endpoints points can be found here  : https://prod-api.thedeep.io/graphql-docs/
+`GraphQL Endpoints documentation <https://prod-api.thedeep.io/graphql-docs/>`_
 
 REST API
 ----------
 
-A thorough documentation of the API itself can be found at */api-docs/*.
+A thorough documentation of the API itself can be found at ``/api-docs/``.
 
 **Authentication**
 
@@ -152,4 +152,4 @@ For most types of errors like forbidden, unauthorized and not found, the interna
 
 For server errors, all except the following lists of predefined errors will have internal error code 500 by default.
 
-* 4011 : User is not authenticated. Access token is required in the authorization header.
+* 401 : User is not authenticated. Access token is required in the authorization header.

@@ -97,8 +97,8 @@ Clone Deeper Repo
 
 **Useful Plugins for Debugging React**
 
-- [React Developer Tools](https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en)
-- [Redux DevTools](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
+- `React Developer Tools <https://chrome.google.com/webstore/detail/react-developer-tools/fmkadmapgofadopljbjfkapdkoienihi?hl=en>`_
+- `Redux DevTools <https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en>`_
 
 **Adding dependencies [web]**
 
@@ -147,7 +147,8 @@ Clone Deeper Repo
 .. code-block:: bash
 
  docker-compose exec web bash
- **Inside web container**
+ 
+**Inside web container**
     
 .. code-block:: bash
 
@@ -161,7 +162,7 @@ Clone Deeper Repo
 
  docker-compose exec client bash
  
- **Inside client container**
+**Inside client container**
 
 .. code-block:: bash
 

@@ -33,3 +33,9 @@ DEEP's documentation is generated as a static page using Sphinx. During deployme
         make html
 
 #. View the generated docs by opening the index file in your browser, at the following path: :code:`<path-to-project>/docs/_build/html/index.html`
+
+Useful References
+-----------------
+
+*   `sphinx-autobuild <https://pypi.org/project/sphinx-autobuild/>`_ is a tool that auto-builds the documentation everytime a change is detected in the ``docs/`` folder
+*   `rst Cheatsheet <https://bashtage.github.io/sphinx-material/rst-cheatsheet/rst-cheatsheet.html>`_ for a handy reference on reStructuredText, the markup language used by Sphinx
