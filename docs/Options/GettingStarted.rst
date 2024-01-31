@@ -21,7 +21,9 @@ docker.
 Clone Deeper Repo
 -------------------
 
-git clone https://github.com/the-deep/deeper.git deep-project-root
+.. code-block:: bash  
+
+  git clone https://github.com/the-deep/deeper.git deep-project-root
 
 **Goto Deeper project root**
 
@@ -31,12 +33,14 @@ git clone https://github.com/the-deep/deeper.git deep-project-root
 
 **Clone client and server**
 
-git clone https://github.com/the-deep/server.git server
+.. code-block:: bash
 
-git clone https://github.com/the-deep/client.git client
-git clone --branch=feature/only-ary https://github.com/the-deep/client.git ./ary-only-client
+  git clone https://github.com/the-deep/server.git server
 
-git clone https://github.com/the-deep/deepl-deep-integration.git deepl-service
+  git clone https://github.com/the-deep/client.git client
+  git clone --branch=feature/only-ary https://github.com/the-deep/client.git ./ary-only-client
+
+  git clone https://github.com/the-deep/deepl-deep-integration.git deepl-service
 
 **Setup client**
 
@@ -46,8 +50,8 @@ git clone https://github.com/the-deep/deepl-deep-integration.git deepl-service
 
 **Building**
 
-Install `docker` and `docker-compose v3`..
-And run the following commands every time dependencies are updated.
+| Install ``docker`` and ``docker-compose v3``
+| Run the following commands every time dependencies are updated.
 
 .. code-block:: bash  
 

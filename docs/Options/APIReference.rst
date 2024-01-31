@@ -68,7 +68,7 @@ The API can also contain the `next` and `previous` fields indicating the URL to 
 Example request:
 
 
-GET /api/v1/leads/?offset=0&limit=1
+``GET /api/v1/leads/?offset=0&limit=1``
 
 Example response:
 
@@ -104,9 +104,7 @@ Example response:
 
 Many APIs also take further query parameters to filter the query set. For example, you can filter Sources by projects using:
 
-.. code-block:: bash
-
-  GET /api/v1/leads/?project=2
+``GET /api/v1/leads/?project=2``
 
 
 The API documentation at */api/v1/docs/* also lists filters available for each API.
