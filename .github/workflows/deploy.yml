@@ -202,7 +202,7 @@ jobs:
       url: https://staging.thedeep.io
     needs: test_build
     steps:
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: client-build-staging
           path: build
@@ -237,7 +237,7 @@ jobs:
       url: https://app.thedeep.io
     needs: [test_build, staging_deploy]
     steps:
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v4.1.7
         with:
           name: client-build-prod
           path: build
