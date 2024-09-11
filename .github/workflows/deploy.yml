@@ -140,7 +140,7 @@ jobs:
           docker run --rm --env-file=./env -v `pwd`/client/build:/code/build $DOCKER_IMAGE sh -c 'yarn install && CI=false NODE_OPTIONS=--max_old_space_size=4096 yarn build'
 
       - name: Upload artifacts [Staging]
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: client-build-staging
           path: ./client/build/
@@ -189,7 +189,7 @@ jobs:
           docker run --rm --env-file=./env -v `pwd`/client/build:/code/build $DOCKER_IMAGE sh -c 'yarn install && CI=false NODE_OPTIONS=--max_old_space_size=4096 yarn build'
 
       - name: Upload artifacts [Prod]
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: client-build-prod
           path: ./client/build/
@@ -202,7 +202,7 @@ jobs:
       url: https://staging.thedeep.io
     needs: test_build
     steps:
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v4
         with:
           name: client-build-staging
           path: build
@@ -237,7 +237,7 @@ jobs:
       url: https://app.thedeep.io
     needs: [test_build, staging_deploy]
     steps:
-      - uses: actions/download-artifact@v1
+      - uses: actions/download-artifact@v4
         with:
           name: client-build-prod
           path: build
