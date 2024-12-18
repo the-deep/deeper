@@ -1,5 +1,5 @@
 {
-    "deep_version": "v2.8.0",
+    "deep_version": "v2.8.1",
     "client": {
         "repo": "https://github.com/the-deep/client",
         "branch": "release-v2.8.2",
