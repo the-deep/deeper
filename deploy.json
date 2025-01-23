@@ -1,9 +1,9 @@
 {
-    "deep_version": "v2.8.3",
+    "deep_version": "v2.8.4",
     "client": {
         "repo": "https://github.com/the-deep/client",
-        "branch": "release-v2.8.4",
-        "deploy": false
+        "branch": "release-v2.8.5",
+        "deploy": true
     },
     "ary_client": {
         "repo": "https://github.com/the-deep/client",
@@ -15,6 +15,6 @@
     "server": {
         "repo": "https://github.com/the-deep/server",
         "branch": "release-v2.8.5",
-        "deploy": true
+        "deploy": false
     }
 }
