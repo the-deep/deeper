@@ -67,15 +67,24 @@ environments:
   staging:
     http:
       alias: staging-api.thedeep.io
-    count:
-      spot: 1
 
-  prod:
+    # count:
+    #   spot: 1
+
     cpu: 2048
     memory: 4096
 
+    count:
+      range: 2-4
+      requests: 1000
+      spot_from: 2
+
+  prod:
     http:
       alias: prod-api.thedeep.io
+
+    cpu: 2048
+    memory: 4096
 
     count:
       range: 2-4

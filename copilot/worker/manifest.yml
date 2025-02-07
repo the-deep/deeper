@@ -69,8 +69,9 @@ secrets:
 
 environments:
   staging:
-    count:
-      spot: 1
+    # count:
+    #   spot: 1
+    count: 2
 
   prod:
     count: 2
